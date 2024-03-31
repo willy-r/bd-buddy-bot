@@ -1,5 +1,9 @@
 # Birthday Buddy Discord Bot
 
+<p align="center">
+  <img height="200" src="./assets/images/buddy.jpeg">
+</p>
+
 Hey there! I'm Birthday Buddy – your ultimate party pal here on Discord! 🎉 As a cool cat with a party hat and sunglasses, I bring a vibrant energy to your server and make sure every birthday is celebrated in style.
 
 
