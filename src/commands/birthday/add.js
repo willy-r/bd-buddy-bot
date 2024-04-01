@@ -15,6 +15,15 @@ module.exports = {
         .setDescription('Whether or not the buddy should show age on message\'s birthday, defaults to false')),
 
   async execute(interaction) {
+    const hasBirthdayRole = interaction.member.roles.cache.some((role) => {
+      return process.env.BIRTHDAY_GUILDS_ROLES.split(',').includes(role.id);
+    });
+
+    if (!hasBirthdayRole) {
+      await interaction.reply('Sorry, but you do not have the right permissions to do that 😥');
+      return;
+    }
+
     const birthdate = interaction.options.getString('birthdate');
     const showAge = interaction.options.getBoolean('show-age') ?? false;
     const { id: userId, username } = interaction.user;
@@ -23,10 +32,10 @@ module.exports = {
     const birthdayData = {
       user_id: userId,
       guild_id: guildId,
-      username,
       guild_name: guildName,
-      birthdate,
       show_age: showAge,
+      birthdate,
+      username,
     };
     try {
       await createBirthday(birthdayData);
