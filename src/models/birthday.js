@@ -28,8 +28,28 @@ module.exports = db.define('birthday', {
     type: DataTypes.DATE,
     allowNull: false,
   },
+  age: {
+    type: DataTypes.BOOLEAN,
+  },
+  show_age: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
 }, {
   createdAt: 'created_at',
   updatedAt: 'updated_at',
   indexes: [{ unique: true, fields: ['user_id', 'guild_id'] }],
+  hooks: {
+    beforeCreate: (birthday) => {
+      const today = new Date();
+      const birthdate = new Date(birthday.birthdate);
+      let age = today.getFullYear() - birthdate.getFullYear();
+      const month = today.getMonth() - birthdate.getMonth();
+      if (month < 0 || (month === 0 && today.getDate() < birthdate.getDate())) {
+        age--;
+      }
+      birthday.age = age;
+    },
+  },
 });
