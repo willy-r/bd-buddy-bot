@@ -145,3 +145,5 @@ dist
 
 # Generated using ignr.py - github.com/Antrikshy/ignr.py
 
+# Databases
+*.sqlite3
