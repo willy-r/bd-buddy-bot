@@ -3,3 +3,4 @@ npm-debug.log
 pnpm-lock.yaml
 assets/
 .env
+*.sqlite3
