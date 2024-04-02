@@ -9,11 +9,11 @@ module.exports = db.define('birthday', {
     primaryKey: true,
   },
   user_id: {
-    type: DataTypes.BIGINT,
+    type: DataTypes.STRING,
     allowNull: false,
   },
   guild_id: {
-    type: DataTypes.BIGINT,
+    type: DataTypes.STRING,
     allowNull: false,
   },
   username: {
