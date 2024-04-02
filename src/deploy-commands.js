@@ -3,8 +3,9 @@
  * Slash commands only need to be registered once, and updated when the definition (description, options etc) is changed.
  * This script is intended to be run separately, only when needed to make changes to slash command definitions.
  *
- * This scrip uses two env variables:
- *   - DISCORD_CLIENT_ID: Applicatio's client id
+ * This scrip uses env variables:
+ *   - DISCORD_TOKEN: Application's token
+ *   - DISCORD_CLIENT_ID: Application's client id
  *   - DISCORD_GUILD_ID: Server's id (optional)
  */
 

@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node .",
     "lint": "eslint .",
-    "deploy:commands": "node ./src/deploy-commands.js",
+    "commands:deploy": "node ./src/deploy-commands.js",
+    "commands:delete": "node ./src/delete-commands.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
