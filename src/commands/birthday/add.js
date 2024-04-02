@@ -39,7 +39,7 @@ module.exports = {
     };
     try {
       await createBirthday(birthdayData);
-      await interaction.reply('Your birthday has been added successfully! 🎉');
+      await interaction.reply(`Your birthday (${birthdate}) has been added successfully! 🎉`);
     }
     catch (err) {
       await interaction.reply(`Failed to add your birthday: ${err.message} 😥`);

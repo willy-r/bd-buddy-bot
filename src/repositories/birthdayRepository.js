@@ -1,3 +1,4 @@
+const { Op, Sequelize } = require('sequelize');
 const Birthday = require('../models/birthday');
 
 async function createBirthday(birthdayData) {
@@ -13,6 +14,36 @@ async function createBirthday(birthdayData) {
   }
 }
 
+async function findAllTodayBirthDays(day, month) {
+  try {
+    return await Birthday.findAll({
+      where: Sequelize.where(
+        Sequelize.cast(Sequelize.col('birthdate'), 'text'),
+        { [Op.like]: `%-${month}-${day}%` },
+      ),
+    });
+  }
+  catch (err) {
+    console.error(err);
+    throw new Error('Failed to get all birthdays');
+  }
+}
+
+async function updateAgeById(birthdayId, byAge) {
+  try {
+    return await Birthday.increment(
+      { age: byAge },
+      { where: { id: birthdayId } },
+    );
+  }
+  catch (err) {
+    console.error(err);
+    throw new Error('Failed to update age by id birthday');
+  }
+}
+
 module.exports = {
   createBirthday,
+  findAllTodayBirthDays,
+  updateAgeById,
 };
