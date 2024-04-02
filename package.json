@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cron": "^3.1.6",
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.5",
     "sequelize": "^6.37.2",
