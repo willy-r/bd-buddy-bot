@@ -24,7 +24,7 @@ module.exports = {
       await interaction.reply('From now, I can\'t remember your birthday 😥');
     }
     catch (err) {
-      await interaction.reply('Failed to show your birthday information 😥');
+      await interaction.reply('Failed to remove your birthday from my memory 😥');
     }
   },
 };

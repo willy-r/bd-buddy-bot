@@ -57,6 +57,19 @@ async function updateAgeById(birthdayId, byAge) {
   }
 }
 
+async function updateByUserAndGuild(userId, guildId, birthdayData) {
+  try {
+    return await Birthday.update(
+      birthdayData,
+      { where: { userId, guildId } },
+    );
+  }
+  catch (err) {
+    console.error(err);
+    throw new Error('Failed to update birthday by user and guild');
+  }
+}
+
 async function deleteByUserAndGuild(userId, guildId) {
   try {
     return await Birthday.destroy({
@@ -79,4 +92,5 @@ module.exports = {
   findByUserAndGuild,
   updateAgeById,
   deleteByUserAndGuild,
+  updateByUserAndGuild,
 };
