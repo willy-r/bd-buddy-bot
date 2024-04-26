@@ -33,8 +33,8 @@ async function findByUserAndGuild(userId, guildId) {
   try {
     return await Birthday.findOne({
       where: {
-        userId,
-        guildId,
+        user_id: userId,
+        guild_id: guildId,
       },
     });
   }
@@ -61,7 +61,7 @@ async function updateByUserAndGuild(userId, guildId, birthdayData) {
   try {
     return await Birthday.update(
       birthdayData,
-      { where: { userId, guildId } },
+      { where: { user_id: userId, guild_id: guildId } },
     );
   }
   catch (err) {
@@ -74,8 +74,8 @@ async function deleteByUserAndGuild(userId, guildId) {
   try {
     return await Birthday.destroy({
       where: {
-        userId,
-        guildId,
+        user_id: userId,
+        guild_id: guildId,
       },
     });
   }
