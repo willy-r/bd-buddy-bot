@@ -29,6 +29,21 @@ async function findAllTodayBirthDays(day, month) {
   }
 }
 
+async function findByUserAndGuild(userId, guildId) {
+  try {
+    return await Birthday.findOne({
+      where: {
+        userId,
+        guildId,
+      },
+    });
+  }
+  catch (err) {
+    console.error(err);
+    throw new Error('Failed to show birthday by user and guild');
+  }
+}
+
 async function updateAgeById(birthdayId, byAge) {
   try {
     return await Birthday.increment(
@@ -38,12 +53,44 @@ async function updateAgeById(birthdayId, byAge) {
   }
   catch (err) {
     console.error(err);
-    throw new Error('Failed to update age by id birthday');
+    throw new Error('Failed to update age by id');
   }
 }
+
+async function updateByUserAndGuild(userId, guildId, birthdayData) {
+  try {
+    return await Birthday.update(
+      birthdayData,
+      { where: { userId, guildId } },
+    );
+  }
+  catch (err) {
+    console.error(err);
+    throw new Error('Failed to update birthday by user and guild');
+  }
+}
+
+async function deleteByUserAndGuild(userId, guildId) {
+  try {
+    return await Birthday.destroy({
+      where: {
+        userId,
+        guildId,
+      },
+    });
+  }
+  catch (err) {
+    console.error(err);
+    throw new Error('Failed to delete birthday by user and guild');
+  }
+}
+
 
 module.exports = {
   createBirthday,
   findAllTodayBirthDays,
+  findByUserAndGuild,
   updateAgeById,
+  deleteByUserAndGuild,
+  updateByUserAndGuild,
 };

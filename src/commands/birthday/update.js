@@ -1,19 +1,19 @@
 const { SlashCommandBuilder } = require('discord.js');
 
-const { createBirthday } = require('../../repositories/birthdayRepository');
+const { updateByUserAndGuild } = require('../../repositories/birthdayRepository');
 const { parseDateStringToDate, isDateInFuture } = require('../../utils/date');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('add')
-    .setDescription('Add your birthday to the Buddy\'s memory!')
+    .setName('update')
+    .setDescription('Update your birthday on the Buddy\'s memory!')
     .addStringOption((option) =>
       option.setName('birthdate')
         .setDescription('Your birthdate in the format "DD/MM/YYYY" (our little secret)')
         .setRequired(true))
     .addBooleanOption((option) =>
       option.setName('show-age')
-        .setDescription('Should Buddy show your age? Defaults to False')),
+        .setDescription('Should Buddy show your age by now? Defaults to False')),
 
   async execute(interaction) {
     const hasBirthdayRole = interaction.member.roles.cache.some((role) => {
@@ -39,23 +39,19 @@ module.exports = {
     }
 
     const showAge = interaction.options.getBoolean('show-age') ?? false;
-    const { id: userId, username } = interaction.user;
-    const { id: guildId, name: guildName } = interaction.guild;
+    const { id: userId } = interaction.user;
+    const { id: guildId } = interaction.guild;
 
     const birthdayData = {
-      user_id: userId,
-      guild_id: guildId,
-      guild_name: guildName,
       show_age: showAge,
       birthdate,
-      username,
     };
     try {
-      await createBirthday(birthdayData);
-      await interaction.reply('Your birthday has been added successfully! 🎉');
+      await updateByUserAndGuild(userId, guildId, birthdayData);
+      await interaction.reply('Your birthday has been updated successfully! 🎉');
     }
     catch (err) {
-      await interaction.reply('Failed to add your birthday 😥');
+      await interaction.reply('Failed to update your birthday 😥');
     }
   },
 };
