@@ -13,7 +13,7 @@ function parseDateStringToDate(dateString) {
 
 function timeUntilBirthday(birthday) {
   const now = new Date();
-  const birthdayDate = birthday;
+  const birthdayDate = new Date(birthday);
 
   // Check if the birthday has already occurred this year.
   if (now.getMonth() > birthdayDate.getMonth() ||

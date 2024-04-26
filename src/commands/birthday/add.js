@@ -47,7 +47,7 @@ module.exports = {
       guild_id: guildId,
       guild_name: guildName,
       show_age: showAge,
-      birthdate,
+      birthdate: birthdateToDate,
       username,
     };
     try {
