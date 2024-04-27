@@ -55,7 +55,11 @@ module.exports = {
       await interaction.reply('Your birthday has been added successfully! 🎉');
     }
     catch (err) {
-      await interaction.reply('Failed to add your birthday 😥');
+      let message = 'Failed to add your birthday';
+      if (err.message.includes('already exists')) {
+        message = 'That birthday already exists in this server for this user';
+      }
+      await interaction.reply(`${message} 😥`);
     }
   },
 };
