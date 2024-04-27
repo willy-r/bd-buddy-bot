@@ -9,11 +9,10 @@ module.exports = {
     .setDescription('Update your birthday on the Buddy\'s memory!')
     .addStringOption((option) =>
       option.setName('birthdate')
-        .setDescription('Your birthdate in the format "DD/MM/YYYY" (our little secret)')
-        .setRequired(true))
+        .setDescription('Your birthdate in the format "DD/MM/YYYY" (updating our little secret)'))
     .addBooleanOption((option) =>
       option.setName('show-age')
-        .setDescription('Should Buddy show your age by now? Defaults to False')),
+        .setDescription('Should Buddy show your age by now?')),
 
   async execute(interaction) {
     const hasBirthdayRole = interaction.member.roles.cache.some((role) => {
@@ -38,21 +37,22 @@ module.exports = {
       return;
     }
 
-    const showAge = interaction.options.getBoolean('show-age') ?? false;
+    const showAge = interaction.options.getBoolean('show-age');
     const { id: userId } = interaction.user;
     const { id: guildId } = interaction.guild;
 
-    const birthdayData = {
-      show_age: showAge,
-      birthdate: birthdateToDate,
-    };
     try {
       const birthday = await findByUserAndGuild(userId, guildId);
 
       if (birthday === null) {
         await interaction.reply('I didn\'t find birthday information for this user on this server to update 😥');
         return;
+
       }
+      const birthdayData = {
+        show_age: showAge ?? birthday.show_age,
+        birthdate: birthdateToDate ?? birthday.birthdate,
+      };
 
       await updateByUserAndGuild(userId, guildId, birthdayData);
       await interaction.reply('Your birthday has been updated successfully! 🎉');
