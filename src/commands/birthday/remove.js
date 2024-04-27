@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 
-const { deleteByUserAndGuild } = require('../../repositories/birthdayRepository');
+const { deleteByUserAndGuild, findByUserAndGuild } = require('../../repositories/birthdayRepository');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -20,6 +20,13 @@ module.exports = {
     const { id: guildId } = interaction.guild;
 
     try {
+      const birthday = await findByUserAndGuild(userId, guildId);
+
+      if (birthday === null) {
+        await interaction.reply('I didn\'t find birthday information for this user on this server to update 😥');
+        return;
+      }
+
       await deleteByUserAndGuild(userId, guildId);
       await interaction.reply('From now, I can\'t remember your birthday 😥');
     }

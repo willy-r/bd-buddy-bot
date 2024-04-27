@@ -22,12 +22,19 @@ module.exports = {
 
     try {
       const birthdayData = await findByUserAndGuild(userId, guildId);
+
+      if (birthdayData === null) {
+        await interaction.reply('I didn\'t find birthday information for this user on this server to show 😥');
+        return;
+      }
+
       const options = {
         month: 'numeric',
         day: 'numeric',
       };
-      const formattedDate = birthdayData.birthdate.toLocaleDateString('pt-BR', options);
-      const formattedTimeUntilBirthday = timeUntilBirthday(birthdayData.birthdate);
+      const { birthdate } = birthdayData;
+      const formattedDate = birthdate.toLocaleDateString('pt-BR', options);
+      const formattedTimeUntilBirthday = timeUntilBirthday(birthdate);
 
       let message = `According to my records, your birthday is ${formattedTimeUntilBirthday} away as it falls on ${formattedDate}`;
 

@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 
-const { updateByUserAndGuild } = require('../../repositories/birthdayRepository');
+const { updateByUserAndGuild, findByUserAndGuild } = require('../../repositories/birthdayRepository');
 const { parseDateStringToDate, isDateInFuture } = require('../../utils/date');
 
 module.exports = {
@@ -44,9 +44,16 @@ module.exports = {
 
     const birthdayData = {
       show_age: showAge,
-      birthdate,
+      birthdate: birthdateToDate,
     };
     try {
+      const birthday = await findByUserAndGuild(userId, guildId);
+
+      if (birthday === null) {
+        await interaction.reply('I didn\'t find birthday information for this user on this server to update 😥');
+        return;
+      }
+
       await updateByUserAndGuild(userId, guildId, birthdayData);
       await interaction.reply('Your birthday has been updated successfully! 🎉');
     }
