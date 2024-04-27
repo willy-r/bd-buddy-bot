@@ -23,7 +23,7 @@ module.exports = {
       const birthday = await findByUserAndGuild(userId, guildId);
 
       if (birthday === null) {
-        await interaction.reply('I didn\'t find birthday information for this user on this server to update 😥');
+        await interaction.reply('I didn\'t find birthday information for this user on this server to remove 😥');
         return;
       }
 

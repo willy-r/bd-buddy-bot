@@ -32,9 +32,8 @@ module.exports = {
         month: 'numeric',
         day: 'numeric',
       };
-      const { birthdate } = birthdayData;
-      const formattedDate = birthdate.toLocaleDateString('pt-BR', options);
-      const formattedTimeUntilBirthday = timeUntilBirthday(birthdate);
+      const formattedDate = birthdayData.birthdate.toLocaleDateString('pt-BR', options);
+      const formattedTimeUntilBirthday = timeUntilBirthday(birthdayData.birthdate);
 
       let message = `According to my records, your birthday is ${formattedTimeUntilBirthday} away as it falls on ${formattedDate}`;
 
