@@ -1,16 +1,3 @@
-function isDateInFuture(date) {
-  const now = new Date();
-  return date > now;
-}
-
-function parseDateStringToDate(dateString) {
-  const parts = dateString.split('/');
-  const year = parseInt(parts[2], 10);
-  const month = parseInt(parts[1], 10) - 1;
-  const day = parseInt(parts[0], 10);
-  return new Date(year, month, day);
-}
-
 function timeUntilBirthday(birthday) {
   const now = new Date();
   const parsedBirthday = new Date(birthday);
@@ -47,7 +34,5 @@ function timeUntilBirthday(birthday) {
 }
 
 module.exports = {
-  isDateInFuture,
-  parseDateStringToDate,
   timeUntilBirthday,
 };

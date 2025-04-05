@@ -147,3 +147,5 @@ dist
 
 # Databases
 *.sqlite3
+
+pnpm-lock.yaml

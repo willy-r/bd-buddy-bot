@@ -1,44 +1,45 @@
 const { SlashCommandBuilder } = require('discord.js');
 
 const { createBirthday } = require('../../repositories/birthdayRepository');
-const { parseDateStringToDate, isDateInFuture } = require('../../utils/date');
+const { birthdaySchema } = require('../../validators/birthday');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('add')
-    .setDescription('Add your birthday to the Buddy\'s memory!')
+    .setDescription('Adiciona seu aniversário à memória do Buddy!')
     .addStringOption((option) =>
       option.setName('birthdate')
-        .setDescription('Your birthdate in the format "DD/MM/YYYY" (our little secret)')
+        .setDescription('Data no formato "DD/MM" ou "DD/MM/AAAA"')
         .setRequired(true))
     .addBooleanOption((option) =>
       option.setName('show-age')
-        .setDescription('Should Buddy show your age? Defaults to False')),
+        .setDescription('O Buddy deve mostrar sua idade? Padrão é falso')),
 
   async execute(interaction) {
-    const hasBirthdayRole = interaction.member.roles.cache.some((role) => {
-      return process.env.BIRTHDAY_GUILDS_ROLES.split(',').includes(role.id);
-    });
+    const hasBirthdayRole = interaction.member.roles.cache.some((role) =>
+      process.env.BIRTHDAY_GUILDS_ROLES.split(',').includes(role.id),
+    );
+
     if (!hasBirthdayRole) {
-      await interaction.reply('Sorry, but you do not have the right permissions to do that 😥');
+      await interaction.reply('Desculpe, você não tem permissão para usar esse comando 😿');
       return;
     }
 
-    const birthdate = interaction.options.getString('birthdate');
-
-    const dateRegex = /^(0[1-9]|[1-2][0-9]|3[0-1])\/(0[1-9]|1[0-2])\/(\d{4})$/;
-    if (!dateRegex.test(birthdate)) {
-      await interaction.reply('Sorry, but birthday should follow the format "DD/MM/YYYY" 😥');
-      return;
-    }
-
-    const birthdateToDate = parseDateStringToDate(birthdate);
-    if (isDateInFuture(birthdateToDate)) {
-      await interaction.reply('Sorry, but birthday should not be in the future 😥');
+    const birthdateInput = interaction.options.getString('birthdate');
+    const parseResult = birthdaySchema.safeParse(birthdateInput);
+    if (!parseResult.success) {
+      const errorMsg = parseResult.error.errors[0]?.message || 'Data inválida';
+      await interaction.reply(`${errorMsg} 😿`);
       return;
     }
 
     const showAge = interaction.options.getBoolean('show-age') ?? false;
+    const { parsedDate, isFullDate } = parseResult.data;
+    if (showAge && !isFullDate) {
+      await interaction.reply('Ops! Para mostrar sua idade, precisamos que você informe o ano de nascimento 🐱');
+      return;
+    }
+
     const { id: userId, username } = interaction.user;
     const { id: guildId, name: guildName } = interaction.guild;
 
@@ -47,19 +48,20 @@ module.exports = {
       guild_id: guildId,
       guild_name: guildName,
       show_age: showAge,
-      birthdate: birthdateToDate,
+      birthdate: parsedDate,
       username,
     };
+
     try {
       await createBirthday(birthdayData);
-      await interaction.reply('Your birthday has been added successfully! 🎉');
+      await interaction.reply('Seu aniversário foi adicionado com sucesso! 🎉😻');
     }
     catch (err) {
-      let message = 'Failed to add your birthday';
+      let message = 'Falha ao adicionar seu aniversário 😿';
       if (err.message.includes('already exists')) {
-        message = 'That birthday already exists in this server for this user';
+        message = 'Parece que seu aniversário já está registrado aqui! 😺';
       }
-      await interaction.reply(`${message} 😥`);
+      await interaction.reply(message);
     }
   },
 };
