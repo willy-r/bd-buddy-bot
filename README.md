@@ -4,6 +4,8 @@
   <img height="200" src="./assets/images/buddy.jpeg">
 </p>
 
+[![Changelog](https://img.shields.io/github/v/release/willy-r/bd-buddy-bot?label=release)](https://github.com/willy-r/bd-buddy-bot/releases)
+
 Hey there! I'm Birthday Buddy – your ultimate party pal here on Discord! 🎉
 
 **Birthday Buddy Bot** is a Discord bot built with [Discord.js](https://github.com/discordjs/guide) to remind users of birthdays. Never miss a friend's special day again with Birthday Buddy Bot!
@@ -35,7 +37,7 @@ To run **Birthday Buddy** Bot locally, follow these steps:
 
 1. Clone the repository to your local machine:
 ```bash
-$ git clone https://github.com/willy-r/bd-buddy-bot.git  # ssh git@github.com:willy-r/bd-buddy-bot.git
+$ git clone https://github.com/willy-r/bd-buddy-bot.git
 ```
 
 2. Navigate to the project directory:
@@ -43,9 +45,11 @@ $ git clone https://github.com/willy-r/bd-buddy-bot.git  # ssh git@github.com:wi
 $ cd bd-buddy-bot
 ```
 
-3. Install dependencies using [pnpm](https://pnpm.io/):
+3. Install dependencies
 ```bash
-$ pnpm install
+$ pnpm i
+$ yarn i
+$ npm install
 ```
 
 4. Create a `.env` file based on the `.env.example` provided.
@@ -55,6 +59,8 @@ $ pnpm install
 6. Start the bot locally:
 ```bash
 $ pnpm start
+$ yarn start
+$ npm run start
 ```
 
 Now, **Birthday Buddy Bot** should be up and running in your Discord server!
@@ -62,6 +68,8 @@ Now, **Birthday Buddy Bot** should be up and running in your Discord server!
 ## How to Contribute
 
 Contributions to **Birthday Buddy Bot** are welcomed and appreciated. Here's how you can contribute:
+
+> Read about Changelog & Conventional Commits Guide [here](./CHANGELOG_GUIDE.md)
 
 ### Adding an Issue
 
