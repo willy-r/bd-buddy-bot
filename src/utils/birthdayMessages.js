@@ -24,6 +24,8 @@ const birthdayGifs = [
   'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExYnMxMWU2MG9obms2cW9uODl5bDFwdTU1aHJtbjYxdWloMXFvYnk3MSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o6gbbokTpXfxyda00/giphy.gif',
   'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExdzUyd2xqcmNsbm5xaWxzazdzaDRkcmE3cW02NmNtMjVvNHI1YzQxciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/x5q7AhlgOhRgP7lzhc/giphy.gif',
   'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGhqcWJveml2MzFsbm9vd2NoZGJidmxvejNpdTNvaGRmamh4bmkwbiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/9fEE6IkH7Ddz12WcHJ/giphy.gif',
+  'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExYjZ0NGdxenE1eGY3cTg4NThtczNtaTZuMnplaDl4a25ncDdkNGF6bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Q7cfgKXdehjTluvop4/giphy.gif',
+  'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExYXZ5ajB5Nzg3MXV2bmpsY2N6dW5ncDJxMG54eW1idXc4ZWo0ZzNzeSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/eRXQ9JRiOHSNwVoGxt/giphy.gif',
 ];
 
 function getRandomBirthdayMessage(userBirthday) {
