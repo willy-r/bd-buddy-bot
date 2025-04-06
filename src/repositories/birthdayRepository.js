@@ -29,6 +29,35 @@ async function findAllTodayBirthDays(day, month) {
   }
 }
 
+async function findNextBirthdaysByGuild(guildId, limit = 5) {
+  try {
+    const query = `
+      SELECT *,
+        CASE
+          WHEN STRFTIME('%m-%d', birthdate) < STRFTIME('%m-%d', CURRENT_DATE)
+            THEN DATE(STRFTIME('%Y', CURRENT_DATE, '+1 year') || '-' || STRFTIME('%m-%d', birthdate))
+          ELSE DATE(STRFTIME('%Y', CURRENT_DATE) || '-' || STRFTIME('%m-%d', birthdate))
+        END AS next_birthday
+      FROM birthdays
+      WHERE guild_id = :guildId
+      ORDER BY next_birthday ASC
+      LIMIT :limit;
+    `;
+
+    const results = await Birthday.sequelize.query(query, {
+      replacements: { guildId, limit },
+      model: Birthday,
+      mapToModel: true,
+    });
+
+    return results;
+  }
+  catch (err) {
+    console.error(err);
+    throw new Error('Failed to get next birthdays');
+  }
+}
+
 async function findByUserAndGuild(userId, guildId) {
   try {
     return await Birthday.findOne({
@@ -40,7 +69,7 @@ async function findByUserAndGuild(userId, guildId) {
   }
   catch (err) {
     console.error(err);
-    throw new Error('Failed to show birthday by user and guild');
+    throw new Error('Failed to get birthday by user and guild');
   }
 }
 
@@ -90,6 +119,7 @@ module.exports = {
   createBirthday,
   findAllTodayBirthDays,
   findByUserAndGuild,
+  findNextBirthdaysByGuild,
   updateAgeById,
   deleteByUserAndGuild,
   updateByUserAndGuild,

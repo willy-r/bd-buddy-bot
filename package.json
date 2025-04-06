@@ -16,11 +16,17 @@
   "dependencies": {
     "cron": "^3.1.6",
     "discord.js": "^14.14.1",
-    "dotenv": "^16.4.5",
     "sequelize": "^6.37.2",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
+    "dotenv": "^16.4.5",
     "eslint": "^8.57.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sqlite3"
+    ]
   }
 }

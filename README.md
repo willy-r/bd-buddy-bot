@@ -4,15 +4,15 @@
   <img height="200" src="./assets/images/buddy.jpeg">
 </p>
 
-Hey there! I'm Birthday Buddy – your ultimate party pal here on Discord! 🎉 As a cool cat with a party hat and sunglasses, I bring a vibrant energy to your server and make sure every birthday is celebrated in style.
+Hey there! I'm Birthday Buddy – your ultimate party pal here on Discord! 🎉
 
 **Birthday Buddy Bot** is a Discord bot built with [Discord.js](https://github.com/discordjs/guide) to remind users of birthdays. Never miss a friend's special day again with Birthday Buddy Bot!
 
 
 ## Features
 
-- 🎈 **Personalized Reminders**: I'll send friendly reminders before each birthday, so you never miss a chance to spread some joy.
-- 🎂 **Interactive Commands**: Just chat with me using intuitive commands to add, show, remove, or update birthdays effortlessly.
+- 🎈 **Personalized Reminders**: I'll send friendly reminders in each birthday, so you never miss a chance to spread some joy.
+- 🎂 **Interactive Commands**: Just chat with me using intuitive commands to add, show, remove birthdays effortlessly.
 
 
 ## Commands
@@ -21,13 +21,12 @@ Hey there! I'm Birthday Buddy – your ultimate party pal here on Discord! 🎉 
 
 - **`add`**: Add a new birthday to the Buddy's memory.
 - **`show`**: Show the respective user birthday information, such as how many time until the next birthday.
-- **`update`**: Update information of an existing birthday reminder.
 - **`remove`**: Remove a birthday from Buddy's memory.
 
 
 ## How to invite the Bot
 
-For now **Birthday Buddy Bot** is only for selected servers to use, since was primarily created to friends, so if you want the bot on your server, please feel free to contact me!
+For now **Birthday Buddy Bot** is only for selected servers to use, since was primarily created to friends, so if you want this bot on your server, please feel free to contact me! Also, feel free to fork and create your own bot!
 
 
 ## Getting Started
@@ -36,7 +35,7 @@ To run **Birthday Buddy** Bot locally, follow these steps:
 
 1. Clone the repository to your local machine:
 ```bash
-$ git clone https://github.com/willy-r/bd-buddy-bot.git  # ssh git@github.com:willy-r/bd-buddy-bot.git
+$ git clone https://github.com/willy-r/bd-buddy-bot.git
 ```
 
 2. Navigate to the project directory:
@@ -44,9 +43,11 @@ $ git clone https://github.com/willy-r/bd-buddy-bot.git  # ssh git@github.com:wi
 $ cd bd-buddy-bot
 ```
 
-3. Install dependencies using [pnpm](https://pnpm.io/):
+3. Install dependencies
 ```bash
-$ pnpm install
+$ pnpm i
+$ yarn i
+$ npm install
 ```
 
 4. Create a `.env` file based on the `.env.example` provided.
@@ -56,6 +57,8 @@ $ pnpm install
 6. Start the bot locally:
 ```bash
 $ pnpm start
+$ yarn start
+$ npm run start
 ```
 
 Now, **Birthday Buddy Bot** should be up and running in your Discord server!

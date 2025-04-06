@@ -29,7 +29,8 @@ module.exports = db.define('birthday', {
     allowNull: false,
   },
   age: {
-    type: DataTypes.BOOLEAN,
+    type: DataTypes.INTEGER,
+    allowNull: true,
   },
   show_age: {
     type: DataTypes.BOOLEAN,
@@ -42,13 +43,19 @@ module.exports = db.define('birthday', {
   indexes: [{ unique: true, fields: ['user_id', 'guild_id'] }],
   hooks: {
     beforeCreate: (birthday) => {
+      if (!birthday.show_age) {
+        birthday.age = null;
+      }
+
       const today = new Date();
       const birthdate = new Date(birthday.birthdate);
       let age = today.getFullYear() - birthdate.getFullYear();
-      const month = today.getMonth() - birthdate.getMonth();
-      if (month < 0 || (month === 0 && today.getDate() < birthdate.getDate())) {
+      const monthDiff = today.getMonth() - birthdate.getMonth();
+
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthdate.getDate())) {
         age--;
       }
+
       birthday.age = age;
     },
   },

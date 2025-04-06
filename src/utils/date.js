@@ -1,53 +1,101 @@
-function isDateInFuture(date) {
-  const now = new Date();
-  return date > now;
+function capitalize(str) {
+  const words = str.split(' ');
+  words[2] = words[2].charAt(0).toUpperCase() + words[2].slice(1);
+  return words.join(' ');
 }
 
-function parseDateStringToDate(dateString) {
-  const parts = dateString.split('/');
-  const year = parseInt(parts[2], 10);
-  const month = parseInt(parts[1], 10) - 1;
-  const day = parseInt(parts[0], 10);
-  return new Date(year, month, day);
+function formatTimeUntilBirthday(birthday) {
+  const now = new Date();
+  const birthDate = new Date(birthday);
+
+  // Generate a new date object for the birthday this year
+  const nextBirthday = new Date(now.getFullYear(), birthDate.getMonth(), birthDate.getDate());
+
+  // If the birthday has already occurred this year, set the next birthday to next year
+  if (
+    now > nextBirthday &&
+    !(now.getDate() === birthDate.getDate() && now.getMonth() === birthDate.getMonth())
+  ) {
+    nextBirthday.setFullYear(now.getFullYear() + 1);
+  }
+
+  // If the birthday is today, return 'hoje'
+  if (
+    now.getDate() === nextBirthday.getDate() &&
+    now.getMonth() === nextBirthday.getMonth()
+  ) {
+    return 'hoje';
+  }
+
+  // Calculate the difference in months and days
+  let months = nextBirthday.getMonth() - now.getMonth();
+  let days = nextBirthday.getDate() - now.getDate();
+
+  if (months < 0 || (months === 0 && days < 0)) {
+    months += 12;
+  }
+
+  if (days < 0) {
+    const prevMonth = new Date(nextBirthday.getFullYear(), nextBirthday.getMonth(), 0).getDate();
+    days += prevMonth;
+    months = (months - 1 + 12) % 12;
+  }
+
+  const parts = [];
+  if (months > 0) parts.push(`${months} ${months > 1 ? 'meses' : 'mês'}`);
+  if (days > 0) parts.push(`${days} dia${days > 1 ? 's' : ''}`);
+
+  return parts.length > 0 ? parts.join(' e ') : 'em breve';
 }
 
-function timeUntilBirthday(birthday) {
-  const now = new Date();
-  const parsedBirthday = new Date(birthday);
-  const birthdayDate = new Date(now.getFullYear(), parsedBirthday.getMonth(), parsedBirthday.getDate());
+function formatBirthdayMessage(birthdayData) {
+  const formattedDate = capitalize(birthdayData.birthdate.toLocaleDateString('pt-BR', {
+    day: 'numeric',
+    month: 'long',
+  }));
 
-  // Check if the birthday has already occurred this year.
-  if (now.getMonth() > birthdayDate.getMonth() ||
-    (now.getMonth() === birthdayDate.getMonth() && now.getDate() > birthdayDate.getDate())) {
-    // If so, set the next birthday to next year.
-    birthdayDate.setFullYear(now.getFullYear() + 1);
+  const time = formatTimeUntilBirthday(birthdayData.birthdate);
+
+  if (time === 'hoje') {
+    if (birthdayData.show_age) {
+      return {
+        message: `De acordo com a minha memória, hoje é seu aniversário e você está completando ${birthdayData.age} anos! Parabéns! 🎉`,
+        isToday: true,
+      };
+    }
+    return {
+      message: 'De acordo com a minha memória, hoje é seu aniversário! Parabéns! 🎉',
+      isToday: true,
+    };
   }
 
-  const timeDiff = birthdayDate.getTime() - now.getTime();
-
-  const months = Math.floor(timeDiff / (1000 * 60 * 60 * 24 * 30));
-  const days = Math.floor((timeDiff % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-
-  let result = '';
-  if (months > 0) {
-    result += `${months} month${months > 1 ? 's' : ''}, `;
+  let message = `De acordo com a minha memória, seu aniversário é em ${time}, no dia ${formattedDate}`;
+  if (birthdayData.show_age) {
+    message += `, e você estará completando ${birthdayData.age + 1} anos`;
   }
-  if (days > 0) {
-    result += `${days} day${days > 1 ? 's' : ''}, `;
-  }
-  if (hours > 0) {
-    result += `${hours} hour${hours > 1 ? 's' : ''}`;
-  }
+  message += '! Tá logo aí! 🎉';
 
-  // Trim any trailing comma and space.
-  result = result.replace(/,\s*$/, '');
+  return {
+    message,
+    isToday: false,
+  };
+}
 
-  return result;
+function formatBirthdayLine(userBirthday) {
+  const birthDateObj = new Date(userBirthday.birthdate);
+  const date = capitalize(birthDateObj.toLocaleDateString('pt-BR', {
+    day: 'numeric',
+    month: 'long',
+  }));
+  const inText = formatTimeUntilBirthday(userBirthday.birthdate);
+
+  if (userBirthday.show_age) {
+    return `🎂 <@${userBirthday.user_id}> - ${date} (${inText}) — fará ${userBirthday.age + 1} anos`;
+  }
+  return `🎉 <@${userBirthday.user_id}> - ${date} (${inText})`;
 }
 
 module.exports = {
-  isDateInFuture,
-  parseDateStringToDate,
-  timeUntilBirthday,
+  formatBirthdayMessage,
+  formatBirthdayLine,
 };

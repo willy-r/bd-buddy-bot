@@ -1,5 +1,15 @@
-const { findAllTodayBirthDays, updateAgeById } = require('../repositories/birthdayRepository');
+const { EmbedBuilder } = require('discord.js');
 
+const { findAllTodayBirthDays, updateAgeById } = require('../repositories/birthdayRepository');
+const { getRandomBirthdayMessage, getRandomBirthdayGif } = require('../utils/birthdayMessages');
+
+/**
+ * Job to send birthday reminders to users.
+ * It checks the database for users with birthdays today and sends a reminder message
+ * in the specified channels of their respective guilds.
+ * It also updates the user's age by 1.
+ * The job should be run daily.
+ */
 module.exports = async (client) => {
   const today = new Date();
   const todayStr = today.toLocaleDateString('pt-BR');
@@ -8,18 +18,18 @@ module.exports = async (client) => {
 
   try {
     const [day, month] = todayStr.split('/').slice(0, 2);
-    const users = await findAllTodayBirthDays(day, month);
+    const usersBirthdays = await findAllTodayBirthDays(day, month);
 
-    if (!users.length) {
-      console.log('There are no users to send birthdays reminders 😥');
+    if (!usersBirthdays.length) {
+      console.log('There are no users to send birthdays reminders');
       return;
     }
 
-    for (const user of users) {
-      const guild = client.guilds.cache.get(user.guild_id);
+    for (const userBirthday of usersBirthdays) {
+      const guild = client.guilds.cache.get(userBirthday.guild_id);
       // Should not be able to send message for not found guild.
       if (!guild) {
-        console.log(`Guild ${user.guild_id} not found for user ${user.user_id}, skipping...`);
+        console.log(`Guild ${userBirthday.guild_id} not found for user ${userBirthday.user_id}, skipping...`);
         continue;
       }
 
@@ -29,21 +39,25 @@ module.exports = async (client) => {
       });
       // Should not be able to send message for not found channel.
       if (!channel) {
-        console.log(`Channel not found for user ${user.user_id} from guild ${user.guild_id}, skipping...`);
+        console.log(`Channel not found for user ${userBirthday.user_id} from guild ${userBirthday.guild_id}, skipping...`);
         continue;
       }
 
-      console.log(`Sending reminder for user ${user.user_id} in channel ${channel.id} from guild ${user.guild_id}`);
-
-      let birthdayMessage = `🎉 Happy Birthday, <@${user.user_id}>! 🎂`;
-      if (user.show_age) {
-        birthdayMessage = `🎉 Happy Birthday for your ${user.age + 1} years old, <@${user.user_id}>! 🎂`;
-      }
+      console.log(`Sending reminder for user ${userBirthday.user_id} in channel ${channel.id} from guild ${userBirthday.guild_id}`);
 
       // Updates user age by 1.
-      await updateAgeById(user.id, 1);
+      await updateAgeById(userBirthday.id, 1);
 
-      channel.send(birthdayMessage);
+      const birthdayMessage = getRandomBirthdayMessage(userBirthday);
+      const birthdayGif = getRandomBirthdayGif();
+
+      const embed = new EmbedBuilder()
+        .setDescription(birthdayMessage)
+        .setImage(birthdayGif)
+        .setColor('#FFD700')
+        .setFooter({ text: 'Comemore seu dia! 🎈' });
+
+      await channel.send({ embeds: [embed] });
     }
   }
   catch (err) {
