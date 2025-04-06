@@ -12,7 +12,7 @@ Hey there! I'm Birthday Buddy – your ultimate party pal here on Discord! 🎉 
 ## Features
 
 - 🎈 **Personalized Reminders**: I'll send friendly reminders before each birthday, so you never miss a chance to spread some joy.
-- 🎂 **Interactive Commands**: Just chat with me using intuitive commands to add, show, remove, or update birthdays effortlessly.
+- 🎂 **Interactive Commands**: Just chat with me using intuitive commands to add, show, remove birthdays effortlessly.
 
 
 ## Commands
@@ -21,7 +21,6 @@ Hey there! I'm Birthday Buddy – your ultimate party pal here on Discord! 🎉 
 
 - **`add`**: Add a new birthday to the Buddy's memory.
 - **`show`**: Show the respective user birthday information, such as how many time until the next birthday.
-- **`update`**: Update information of an existing birthday reminder.
 - **`remove`**: Remove a birthday from Buddy's memory.
 
 
