@@ -13,7 +13,6 @@ const birthdayMessagesWithAge = [
   (userBirthday) => `🎊 Parabéns pelos seus ${userBirthday.age + 1} anos, <@${userBirthday.user_id}>! Que venham muitos outros! ✨`,
 ];
 
-// @TODO: choose better gifs
 const birthdayGifs = [
   'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmVtdGxxczJ3d3B3cjNnN2QzbmRhZHRydnRiZXh3d3g5eXlrd3FpdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/T1mwiKjGsITzaWMGu4/giphy.gif',
   'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExeHUweWIxbzEyZms5cTRxZ3h3bmU0cmZuYXF1Zmw3cm5oZ3pkM2l4bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Im6d35ebkCIiGzonjI/giphy.gif',

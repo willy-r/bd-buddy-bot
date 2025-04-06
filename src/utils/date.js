@@ -35,7 +35,7 @@ function formatTimeUntilBirthday(birthday) {
   const parts = [];
 
   if (months > 0) {
-    parts.push(`${months} mês${months > 1 ? 'es' : ''}`);
+    parts.push(`${months} ${months > 1 ? 'meses' : 'mês'}`);
   }
   if (days > 0) {
     parts.push(`${days} dia${days > 1 ? 's' : ''}`);
@@ -82,6 +82,21 @@ function formatBirthdayMessage(birthdayData) {
   };
 }
 
+function formatBirthdayLine(userBirthday) {
+  const birthDateObj = new Date(userBirthday.birthdate);
+  const date = capitalize(birthDateObj.toLocaleDateString('pt-BR', {
+    day: 'numeric',
+    month: 'long',
+  }));
+  const inText = formatTimeUntilBirthday(userBirthday.birthdate);
+
+  if (userBirthday.show_age) {
+    return `🎂 <@${userBirthday.user_id}> - ${date} (${inText}) — fará ${userBirthday.age + 1} anos`;
+  }
+  return `🎉 <@${userBirthday.user_id}> - ${date} (${inText})`;
+}
+
 module.exports = {
   formatBirthdayMessage,
+  formatBirthdayLine,
 };
