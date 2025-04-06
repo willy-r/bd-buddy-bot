@@ -1,7 +1,8 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 const { findByUserAndGuild } = require('../../repositories/birthdayRepository');
 const { formatBirthdayMessage } = require('../../utils/date');
+const { getRandomBirthdayGif } = require('../../utils/birthdayMessages');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -28,11 +29,22 @@ module.exports = {
         return;
       }
 
-      const message = formatBirthdayMessage(birthdayData);
+      const { message, isToday } = formatBirthdayMessage(birthdayData);
+      if (isToday) {
+        const embed = new EmbedBuilder()
+          .setDescription(message)
+          .setImage(getRandomBirthdayGif())
+          .setColor('#FFD700')
+          .setFooter({ text: 'Feliz aniversário! 🎈' });
+
+        await interaction.reply({ embeds: [embed] });
+        return;
+      }
+
       await interaction.reply(message);
     }
     catch (err) {
-      await interaction.reply('Failed to show your birthday information 😥');
+      await interaction.reply('Não foi possível mostrar as informações do seu aniversário 😿');
     }
   },
 };

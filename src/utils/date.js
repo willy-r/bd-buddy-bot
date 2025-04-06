@@ -59,18 +59,27 @@ function formatBirthdayMessage(birthdayData) {
 
   if (time === 'hoje') {
     if (birthdayData.show_age) {
-      return `De acordo com a minha memória, hoje é seu aniversário e você está completando ${birthdayData.age} anos! Parabéns! 🎉`;
+      return {
+        message: `De acordo com a minha memória, hoje é seu aniversário e você está completando ${birthdayData.age} anos! Parabéns! 🎉`,
+        isToday: true,
+      };
     }
-    return 'De acordo com a minha memória, hoje é seu aniversário! Parabéns! 🎉';
+    return {
+      message: 'De acordo com a minha memória, hoje é seu aniversário! Parabéns! 🎉',
+      isToday: true,
+    };
   }
 
   let message = `De acordo com a minha memória, seu aniversário é em ${time}, no dia ${formattedDate}`;
   if (birthdayData.show_age) {
-    message += `, e você estará completando ${birthdayData.age} anos`;
+    message += `, e você estará completando ${birthdayData.age + 1} anos`;
   }
   message += '! Tá logo aí! 🎉';
 
-  return message;
+  return {
+    message,
+    isToday: false,
+  };
 }
 
 module.exports = {
