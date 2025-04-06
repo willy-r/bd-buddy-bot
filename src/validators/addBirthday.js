@@ -27,13 +27,6 @@ const birthdaySchema = z.string().transform((val, ctx) => {
     const monthNum = parseInt(month, 10);
     const yearNum = parseInt(year, 10);
 
-    // if (!isValidYear(yearNum)) {
-    //   ctx.addIssue({
-    //     code: z.ZodIssueCode.custom,
-    //     message: 'O ano deve estar entre 1900 e o ano atual',
-    //   });
-    //   return z.NEVER;
-    // }
     const parsedDate = createDateWithGuessedYear(dayNum, monthNum, yearNum);
     if (!isValidDate(parsedDate)) {
       ctx.addIssue({
@@ -62,14 +55,6 @@ const birthdaySchema = z.string().transform((val, ctx) => {
     });
     return z.NEVER;
   }
-
-  // if (isDateInFuture(data.parsedDate)) {
-  //   ctx.addIssue({
-  //     code: z.ZodIssueCode.custom,
-  //     message: 'A data de nascimento não pode estar no futuro',
-  //   });
-  //   return z.NEVER;
-  // }
 
   return data;
 });

@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 
 const { createBirthday } = require('../../repositories/birthdayRepository');
-const { birthdaySchema } = require('../../validators/birthday');
+const { birthdaySchema } = require('../../validators/addBirthday');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -32,9 +32,9 @@ module.exports = {
       return;
     }
 
-    const showAge = interaction.options.getBoolean('show-age') ?? false;
+    const showAgeInput = interaction.options.getBoolean('show-age') ?? false;
     const { parsedDate, isFullDate } = parseResult.data;
-    if (showAge && !isFullDate) {
+    if (showAgeInput && !isFullDate) {
       await interaction.reply('Ops! Para mostrar sua idade, precisamos que você informe o ano de nascimento 🐱');
       return;
     }
@@ -46,7 +46,7 @@ module.exports = {
       user_id: userId,
       guild_id: guildId,
       guild_name: guildName,
-      show_age: showAge,
+      show_age: showAgeInput,
       birthdate: parsedDate,
       username,
     };
