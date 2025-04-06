@@ -4,8 +4,6 @@
   <img height="200" src="./assets/images/buddy.jpeg">
 </p>
 
-[![Changelog](https://img.shields.io/github/v/release/willy-r/bd-buddy-bot?label=release)](https://github.com/willy-r/bd-buddy-bot/releases)
-
 Hey there! I'm Birthday Buddy – your ultimate party pal here on Discord! 🎉
 
 **Birthday Buddy Bot** is a Discord bot built with [Discord.js](https://github.com/discordjs/guide) to remind users of birthdays. Never miss a friend's special day again with Birthday Buddy Bot!
@@ -68,8 +66,6 @@ Now, **Birthday Buddy Bot** should be up and running in your Discord server!
 ## How to Contribute
 
 Contributions to **Birthday Buddy Bot** are welcomed and appreciated. Here's how you can contribute:
-
-> Read about Changelog & Conventional Commits Guide [here](./CHANGELOG_GUIDE.md)
 
 ### Adding an Issue
 
