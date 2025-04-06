@@ -6,47 +6,46 @@ function capitalize(str) {
 
 function formatTimeUntilBirthday(birthday) {
   const now = new Date();
-  const parsedBirthday = new Date(birthday);
-  const birthdayDate = new Date(now.getFullYear(), parsedBirthday.getMonth(), parsedBirthday.getDate());
+  const birthDate = new Date(birthday);
 
-  // Check if the birthday has already occurred this year
+  // Generate a new date object for the birthday this year
+  const nextBirthday = new Date(now.getFullYear(), birthDate.getMonth(), birthDate.getDate());
+
+  // If the birthday has already occurred this year, set the next birthday to next year
   if (
-    now.getMonth() > birthdayDate.getMonth() ||
-    (now.getMonth() === birthdayDate.getMonth() && now.getDate() > birthdayDate.getDate())
+    now > nextBirthday &&
+    !(now.getDate() === birthDate.getDate() && now.getMonth() === birthDate.getMonth())
   ) {
-    birthdayDate.setFullYear(now.getFullYear() + 1);
+    nextBirthday.setFullYear(now.getFullYear() + 1);
   }
 
-  // Check if the birthday is today
+  // If the birthday is today, return 'hoje'
   if (
-    now.getDate() === birthdayDate.getDate() &&
-    now.getMonth() === birthdayDate.getMonth()
+    now.getDate() === nextBirthday.getDate() &&
+    now.getMonth() === nextBirthday.getMonth()
   ) {
     return 'hoje';
   }
 
-  // For birthdays that will occur in the future
-  const msDiff = birthdayDate.getTime() - now.getTime();
-  const totalDays = Math.floor(msDiff / (1000 * 60 * 60 * 24));
-  const months = Math.floor(totalDays / 30);
-  const days = totalDays % 30;
-  const hours = Math.floor((msDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  // Calculate the difference in months and days
+  let months = nextBirthday.getMonth() - now.getMonth();
+  let days = nextBirthday.getDate() - now.getDate();
+
+  if (months < 0 || (months === 0 && days < 0)) {
+    months += 12;
+  }
+
+  if (days < 0) {
+    const prevMonth = new Date(nextBirthday.getFullYear(), nextBirthday.getMonth(), 0).getDate();
+    days += prevMonth;
+    months = (months - 1 + 12) % 12;
+  }
 
   const parts = [];
+  if (months > 0) parts.push(`${months} ${months > 1 ? 'meses' : 'mês'}`);
+  if (days > 0) parts.push(`${days} dia${days > 1 ? 's' : ''}`);
 
-  if (months > 0) {
-    parts.push(`${months} ${months > 1 ? 'meses' : 'mês'}`);
-  }
-  if (days > 0) {
-    parts.push(`${days} dia${days > 1 ? 's' : ''}`);
-  }
-  if (hours > 0 && months === 0) {
-    parts.push(`${hours} hora${hours > 1 ? 's' : ''}`);
-  }
-
-  if (parts.length === 0) return 'em breve';
-  if (parts.length === 1) return parts[0];
-  return parts.slice(0, -1).join(', ') + ' e ' + parts.slice(-1);
+  return parts.length > 0 ? parts.join(' e ') : 'em breve';
 }
 
 function formatBirthdayMessage(birthdayData) {
