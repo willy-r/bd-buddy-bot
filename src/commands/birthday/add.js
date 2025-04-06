@@ -19,7 +19,6 @@ module.exports = {
     const hasBirthdayRole = interaction.member.roles.cache.some((role) =>
       process.env.BIRTHDAY_GUILDS_ROLES.split(',').includes(role.id),
     );
-
     if (!hasBirthdayRole) {
       await interaction.reply('Desculpe, você não tem permissão para usar esse comando 😿');
       return;

@@ -1,19 +1,19 @@
 const { SlashCommandBuilder } = require('discord.js');
 
 const { findByUserAndGuild } = require('../../repositories/birthdayRepository');
-const { timeUntilBirthday } = require('../../utils/date');
+const { formatBirthdayMessage } = require('../../utils/date');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('show')
-    .setDescription('Show your birthday information'),
+    .setDescription('Mostra quanto tempo falta para o seu aniversário!'),
 
   async execute(interaction) {
     const hasBirthdayRole = interaction.member.roles.cache.some((role) => {
       return process.env.BIRTHDAY_GUILDS_ROLES.split(',').includes(role.id);
     });
     if (!hasBirthdayRole) {
-      await interaction.reply('Sorry, but you do not have the right permissions to do that 😥');
+      await interaction.reply('Desculpe, você não tem permissão para usar esse comando 😿');
       return;
     }
 
@@ -24,24 +24,12 @@ module.exports = {
       const birthdayData = await findByUserAndGuild(userId, guildId);
 
       if (birthdayData === null) {
-        await interaction.reply('I didn\'t find birthday information for this user on this server to show 😥');
+        await interaction.reply('Ops! Parece que você não tem um aniversário registrado aqui 😿');
         return;
       }
 
-      const options = {
-        month: 'numeric',
-        day: 'numeric',
-      };
-      const formattedDate = birthdayData.birthdate.toLocaleDateString('pt-BR', options);
-      const formattedTimeUntilBirthday = timeUntilBirthday(birthdayData.birthdate);
-
-      let message = `According to my records, your birthday is ${formattedTimeUntilBirthday} away as it falls on ${formattedDate}`;
-
-      if (birthdayData.show_age) {
-        message = `According to my records, your birthday is ${formattedTimeUntilBirthday} away as it falls on ${formattedDate} and you are ${birthdayData.age} years old`;
-      }
-
-      await interaction.reply(`${message}! 🎉`);
+      const message = formatBirthdayMessage(birthdayData);
+      await interaction.reply(message);
     }
     catch (err) {
       await interaction.reply('Failed to show your birthday information 😥');

@@ -5,14 +5,14 @@ const { deleteByUserAndGuild, findByUserAndGuild } = require('../../repositories
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('remove')
-    .setDescription('Remove your birthday from Buddy\'s memory'),
+    .setDescription('Remove seu aniversário da memória do Buddy!'),
 
   async execute(interaction) {
     const hasBirthdayRole = interaction.member.roles.cache.some((role) => {
       return process.env.BIRTHDAY_GUILDS_ROLES.split(',').includes(role.id);
     });
     if (!hasBirthdayRole) {
-      await interaction.reply('Sorry, but you do not have the right permissions to do that 😥');
+      await interaction.reply('Desculpe, você não tem permissão para usar esse comando 😿');
       return;
     }
 
@@ -23,15 +23,15 @@ module.exports = {
       const birthday = await findByUserAndGuild(userId, guildId);
 
       if (birthday === null) {
-        await interaction.reply('I didn\'t find birthday information for this user on this server to remove 😥');
+        await interaction.reply('Ops! Parece que você não tem um aniversário registrado aqui 😿');
         return;
       }
 
       await deleteByUserAndGuild(userId, guildId);
-      await interaction.reply('From now, I can\'t remember your birthday 😥');
+      await interaction.reply('Seu aniversário foi removido da memória do Buddy! 😿');
     }
     catch (err) {
-      await interaction.reply('Failed to remove your birthday from my memory 😥');
+      await interaction.reply('Falha ao remover seu aniversário 😿');
     }
   },
 };
