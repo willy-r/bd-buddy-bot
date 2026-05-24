@@ -1,4 +1,8 @@
-const birthdayMessages = [
+import type { BirthdayData } from '../types';
+
+type MessageFn = (userBirthday: BirthdayData) => string;
+
+const birthdayMessages: MessageFn[] = [
   (userBirthday) => `🎉 Feliz aniversário, <@${userBirthday.user_id}>! Que o seu dia seja incrível! 🎂`,
   (userBirthday) => `🎈 Hoje é dia de festa! Parabéns, <@${userBirthday.user_id}>! 🥳`,
   (userBirthday) => `🎂 Uhuu! Chegou o grande dia, <@${userBirthday.user_id}>! Feliz aniversário! 🎉`,
@@ -6,14 +10,14 @@ const birthdayMessages = [
   (userBirthday) => `🥳 Parabéns pelo seu dia, <@${userBirthday.user_id}>! Aproveite muito! 🎉`,
 ];
 
-const birthdayMessagesWithAge = [
-  (userBirthday) => `🎉 Feliz aniversário pelos seus ${userBirthday.age + 1} anos, <@${userBirthday.user_id}>! 🎂`,
-  (userBirthday) => `🎂 Hoje você completa ${userBirthday.age + 1} anos! Parabéns, <@${userBirthday.user_id}>! 🎈`,
-  (userBirthday) => `🎁 Mais um ano de vida! Feliz ${userBirthday.age + 1} anos, <@${userBirthday.user_id}>! 🥳`,
-  (userBirthday) => `🎊 Parabéns pelos seus ${userBirthday.age + 1} anos, <@${userBirthday.user_id}>! Que venham muitos outros! ✨`,
+const birthdayMessagesWithAge: MessageFn[] = [
+  (userBirthday) => `🎉 Feliz aniversário pelos seus ${(userBirthday.age ?? 0) + 1} anos, <@${userBirthday.user_id}>! 🎂`,
+  (userBirthday) => `🎂 Hoje você completa ${(userBirthday.age ?? 0) + 1} anos! Parabéns, <@${userBirthday.user_id}>! 🎈`,
+  (userBirthday) => `🎁 Mais um ano de vida! Feliz ${(userBirthday.age ?? 0) + 1} anos, <@${userBirthday.user_id}>! 🥳`,
+  (userBirthday) => `🎊 Parabéns pelos seus ${(userBirthday.age ?? 0) + 1} anos, <@${userBirthday.user_id}>! Que venham muitos outros! ✨`,
 ];
 
-const birthdayGifs = [
+const birthdayGifs: string[] = [
   'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmVtdGxxczJ3d3B3cjNnN2QzbmRhZHRydnRiZXh3d3g5eXlrd3FpdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/T1mwiKjGsITzaWMGu4/giphy.gif',
   'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExeHUweWIxbzEyZms5cTRxZ3h3bmU0cmZuYXF1Zmw3cm5oZ3pkM2l4bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Im6d35ebkCIiGzonjI/giphy.gif',
   'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExcTgwN2xpdXV3dnpla3Bwd3hxMjlrMng1NzN4bmpnYmxrejE1Mm81NyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4R9iPofhP6lQzmTlhA/giphy.gif',
@@ -27,18 +31,13 @@ const birthdayGifs = [
   'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExYXZ5ajB5Nzg3MXV2bmpsY2N6dW5ncDJxMG54eW1idXc4ZWo0ZzNzeSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/eRXQ9JRiOHSNwVoGxt/giphy.gif',
 ];
 
-function getRandomBirthdayMessage(userBirthday) {
+export function getRandomBirthdayMessage(userBirthday: BirthdayData): string {
   const messages = userBirthday.show_age ? birthdayMessagesWithAge : birthdayMessages;
   const index = Math.floor(Math.random() * messages.length);
   return messages[index](userBirthday);
 }
 
-function getRandomBirthdayGif() {
+export function getRandomBirthdayGif(): string {
   const index = Math.floor(Math.random() * birthdayGifs.length);
   return birthdayGifs[index];
 }
-
-module.exports = {
-  getRandomBirthdayMessage,
-  getRandomBirthdayGif,
-};

@@ -1,8 +1,27 @@
-const { DataTypes } = require('sequelize');
+import {
+  Model,
+  DataTypes,
+  InferAttributes,
+  InferCreationAttributes,
+  CreationOptional,
+} from 'sequelize';
 
-const db = require('../database/sequelize');
+import db from '../database/sequelize';
 
-module.exports = db.define('birthday', {
+class Birthday extends Model<InferAttributes<Birthday>, InferCreationAttributes<Birthday>> {
+  declare id: CreationOptional<string>;
+  declare user_id: string;
+  declare guild_id: string;
+  declare username: string;
+  declare guild_name: string;
+  declare birthdate: Date;
+  declare age: number | null;
+  declare show_age: boolean;
+  declare readonly created_at: CreationOptional<Date>;
+  declare readonly updated_at: CreationOptional<Date>;
+}
+
+Birthday.init({
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
@@ -37,7 +56,10 @@ module.exports = db.define('birthday', {
     allowNull: false,
     defaultValue: false,
   },
+  created_at: DataTypes.DATE,
+  updated_at: DataTypes.DATE,
 }, {
+  sequelize: db,
   createdAt: 'created_at',
   updatedAt: 'updated_at',
   indexes: [{ unique: true, fields: ['user_id', 'guild_id'] }],
@@ -60,3 +82,5 @@ module.exports = db.define('birthday', {
     },
   },
 });
+
+export default Birthday;

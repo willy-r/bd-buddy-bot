@@ -1,25 +1,29 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
+import type { Command } from '../../types';
 
-const { findByUserAndGuild } = require('../../repositories/birthdayRepository');
-const { formatBirthdayMessage } = require('../../utils/date');
-const { getRandomBirthdayGif } = require('../../utils/birthdayMessages');
+import { findByUserAndGuild } from '../../repositories/birthdayRepository';
+import { formatBirthdayMessage } from '../../utils/date';
+import { getRandomBirthdayGif } from '../../utils/birthdayMessages';
 
-module.exports = {
+const command: Command = {
   data: new SlashCommandBuilder()
     .setName('show')
     .setDescription('Mostra quanto tempo falta para o seu aniversário!'),
 
-  async execute(interaction) {
-    const hasBirthdayRole = interaction.member.roles.cache.some((role) => {
-      return process.env.BIRTHDAY_GUILDS_ROLES.split(',').includes(role.id);
-    });
+  async execute(interaction: ChatInputCommandInteraction) {
+    const hasBirthdayRole = interaction.member?.roles && 'cache' in interaction.member.roles
+      ? interaction.member.roles.cache.some((role) => {
+        return (process.env.BIRTHDAY_GUILDS_ROLES ?? '').split(',').includes(role.id);
+      })
+      : false;
+
     if (!hasBirthdayRole) {
       await interaction.reply('Desculpe, você não tem permissão para usar esse comando 😿');
       return;
     }
 
     const { id: userId } = interaction.user;
-    const { id: guildId } = interaction.guild;
+    const { id: guildId } = interaction.guild!;
 
     try {
       const birthdayData = await findByUserAndGuild(userId, guildId);
@@ -43,8 +47,10 @@ module.exports = {
 
       await interaction.reply(message);
     }
-    catch (err) {
+    catch (_err) {
       await interaction.reply('Não foi possível mostrar as informações do seu aniversário 😿');
     }
   },
 };
+
+export default command;

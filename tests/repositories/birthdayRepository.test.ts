@@ -1,15 +1,22 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-const Birthday = require('../../src/models/birthday');
-const {
+import Birthday from '../../src/models/birthday';
+import {
   createBirthday,
   findAllTodayBirthDays,
   findByUserAndGuild,
   findNextBirthdaysByGuild,
   updateAgeById,
   deleteByUserAndGuild,
-} = require('../../src/repositories/birthdayRepository');
+} from '../../src/repositories/birthdayRepository';
 
-function makeBirthday(overrides = {}) {
+function makeBirthday(overrides: Partial<{
+  user_id: string;
+  guild_id: string;
+  username: string;
+  guild_name: string;
+  birthdate: Date;
+  show_age: boolean;
+}> = {}) {
   return {
     user_id: 'user1',
     guild_id: 'guild1',
@@ -69,7 +76,7 @@ describe('findByUserAndGuild', () => {
     await createBirthday(makeBirthday());
     const result = await findByUserAndGuild('user1', 'guild1');
     expect(result).not.toBeNull();
-    expect(result.user_id).toBe('user1');
+    expect(result!.user_id).toBe('user1');
   });
 
   it('returns null when not found', async () => {
@@ -107,7 +114,7 @@ describe('updateAgeById', () => {
     const ageBefore = created.age;
     await updateAgeById(created.id, 1);
     const updated = await findByUserAndGuild('user1', 'guild1');
-    expect(updated.age).toBe(ageBefore + 1);
+    expect(updated!.age).toBe((ageBefore ?? 0) + 1);
   });
 });
 

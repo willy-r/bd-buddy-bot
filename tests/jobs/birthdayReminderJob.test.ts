@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-const Birthday = require('../../src/models/birthday');
-const birthdayReminderJob = require('../../src/jobs/birthdayReminderJob');
+import Birthday from '../../src/models/birthday';
+import birthdayReminderJob from '../../src/jobs/birthdayReminderJob';
 
 // Integration tests: real in-memory SQLite DB, mocked Discord client only.
 // Today is pinned to June 15 2024 so query date is deterministic.
@@ -17,7 +17,7 @@ function makeClient({ guildExists = true, channelExists = true } = {}) {
   };
 }
 
-async function createBirthdayToday(overrides = {}) {
+async function createBirthdayToday(overrides: Record<string, unknown> = {}) {
   return Birthday.create({
     user_id: 'u1',
     guild_id: 'g1',
@@ -43,21 +43,21 @@ afterEach(() => {
 describe('birthdayReminderJob', () => {
   it('does nothing when there are no birthdays today', async () => {
     const client = makeClient();
-    await birthdayReminderJob(client);
+    await birthdayReminderJob(client as never);
     expect(client._sendMock).not.toHaveBeenCalled();
   });
 
   it('skips when guild is not found in cache', async () => {
     await createBirthdayToday();
     const client = makeClient({ guildExists: false });
-    await birthdayReminderJob(client);
+    await birthdayReminderJob(client as never);
     expect(client._sendMock).not.toHaveBeenCalled();
   });
 
   it('skips when channel is not found in cache', async () => {
     await createBirthdayToday();
     const client = makeClient({ guildExists: true, channelExists: false });
-    await birthdayReminderJob(client);
+    await birthdayReminderJob(client as never);
     expect(client._sendMock).not.toHaveBeenCalled();
   });
 
@@ -66,15 +66,15 @@ describe('birthdayReminderJob', () => {
     const ageBefore = record.age;
     const client = makeClient();
 
-    await birthdayReminderJob(client);
+    await birthdayReminderJob(client as never);
 
     expect(client._sendMock).toHaveBeenCalledOnce();
-    const [payload] = client._sendMock.mock.calls[0];
+    const [payload] = client._sendMock.mock.calls[0] as [{ embeds: unknown[] }][];
     expect(payload).toHaveProperty('embeds');
-    expect(payload.embeds.length).toBe(1);
+    expect((payload as unknown as { embeds: unknown[] }).embeds.length).toBe(1);
 
     const updated = await Birthday.findByPk(record.id);
-    expect(updated.age).toBe(ageBefore + 1);
+    expect(updated!.age).toBe((ageBefore ?? 0) + 1);
   });
 
   it('processes multiple birthday records independently', async () => {
@@ -82,7 +82,7 @@ describe('birthdayReminderJob', () => {
     await createBirthdayToday({ user_id: 'u2' });
     const client = makeClient();
 
-    await birthdayReminderJob(client);
+    await birthdayReminderJob(client as never);
 
     expect(client._sendMock).toHaveBeenCalledTimes(2);
   });

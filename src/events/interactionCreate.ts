@@ -1,11 +1,10 @@
-const { Events } = require('discord.js');
+import { Events, Interaction } from 'discord.js';
+import type { DiscordEvent } from '../types';
 
-module.exports = {
+const event: DiscordEvent = {
   name: Events.InteractionCreate,
 
-  async execute(interaction) {
-    // Each command executed generate an interaction and
-    // this is for respond with code to each interaction.
+  async execute(interaction: Interaction) {
     if (!interaction.isChatInputCommand()) return;
 
     const command = interaction.client.commands.get(interaction.commandName);
@@ -29,3 +28,5 @@ module.exports = {
     }
   },
 };
+
+export default event;

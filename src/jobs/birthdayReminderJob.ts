@@ -1,16 +1,10 @@
-const { EmbedBuilder } = require('discord.js');
+import { EmbedBuilder } from 'discord.js';
+import type { Client } from '../types';
 
-const { findAllTodayBirthDays, updateAgeById } = require('../repositories/birthdayRepository');
-const { getRandomBirthdayMessage, getRandomBirthdayGif } = require('../utils/birthdayMessages');
+import { findAllTodayBirthDays, updateAgeById } from '../repositories/birthdayRepository';
+import { getRandomBirthdayMessage, getRandomBirthdayGif } from '../utils/birthdayMessages';
 
-/**
- * Job to send birthday reminders to users.
- * It checks the database for users with birthdays today and sends a reminder message
- * in the specified channels of their respective guilds.
- * It also updates the user's age by 1.
- * The job should be run daily.
- */
-module.exports = async (client) => {
+export default async function birthdayReminderJob(client: Client): Promise<void> {
   const today = new Date();
   const todayStr = today.toLocaleDateString('pt-BR');
 
@@ -27,17 +21,14 @@ module.exports = async (client) => {
 
     for (const userBirthday of usersBirthdays) {
       const guild = client.guilds.cache.get(userBirthday.guild_id);
-      // Should not be able to send message for not found guild.
       if (!guild) {
         console.log(`Guild ${userBirthday.guild_id} not found for user ${userBirthday.user_id}, skipping...`);
         continue;
       }
 
-      // Get specific availables channels (from the user's guild) to send messages.
       const channel = guild.channels.cache.find((chann) => {
-        return process.env.BIRTHDAY_GUILDS_CHANNELS.split(',').includes(chann.id);
+        return (process.env.BIRTHDAY_GUILDS_CHANNELS ?? '').split(',').includes(chann.id);
       });
-      // Should not be able to send message for not found channel.
       if (!channel) {
         console.log(`Channel not found for user ${userBirthday.user_id} from guild ${userBirthday.guild_id}, skipping...`);
         continue;
@@ -45,7 +36,6 @@ module.exports = async (client) => {
 
       console.log(`Sending reminder for user ${userBirthday.user_id} in channel ${channel.id} from guild ${userBirthday.guild_id}`);
 
-      // Updates user age by 1.
       await updateAgeById(userBirthday.id, 1);
 
       const birthdayMessage = getRandomBirthdayMessage(userBirthday);
@@ -57,10 +47,10 @@ module.exports = async (client) => {
         .setColor('#FFD700')
         .setFooter({ text: 'Comemore seu dia! 🎈' });
 
-      await channel.send({ embeds: [embed] });
+      await (channel as { send: (opts: unknown) => Promise<unknown> }).send({ embeds: [embed] });
     }
   }
   catch (err) {
     console.error(err);
   }
-};
+}

@@ -1,20 +1,21 @@
-const { Op, Sequelize } = require('sequelize');
-const Birthday = require('../models/birthday');
+import { Op, Sequelize } from 'sequelize';
+import Birthday from '../models/birthday';
+import type { BirthdayData } from '../types';
 
-async function createBirthday(birthdayData) {
+export async function createBirthday(birthdayData: BirthdayData): Promise<Birthday> {
   try {
     return await Birthday.create(birthdayData);
   }
   catch (err) {
     console.error(err);
-    if (err.name === 'SequelizeUniqueConstraintError') {
+    if ((err as { name?: string }).name === 'SequelizeUniqueConstraintError') {
       throw new Error('That birthday already exists in this server for this user');
     }
     throw new Error('Failed to create user birthday');
   }
 }
 
-async function findAllTodayBirthDays(day, month) {
+export async function findAllTodayBirthDays(day: string, month: string): Promise<Birthday[]> {
   try {
     return await Birthday.findAll({
       where: Sequelize.where(
@@ -29,7 +30,7 @@ async function findAllTodayBirthDays(day, month) {
   }
 }
 
-async function findNextBirthdaysByGuild(guildId, limit = 5) {
+export async function findNextBirthdaysByGuild(guildId: string, limit = 5): Promise<Birthday[]> {
   try {
     const query = `
       SELECT *,
@@ -44,13 +45,11 @@ async function findNextBirthdaysByGuild(guildId, limit = 5) {
       LIMIT :limit;
     `;
 
-    const results = await Birthday.sequelize.query(query, {
+    return await Birthday.sequelize!.query(query, {
       replacements: { guildId, limit },
       model: Birthday,
       mapToModel: true,
     });
-
-    return results;
   }
   catch (err) {
     console.error(err);
@@ -58,7 +57,7 @@ async function findNextBirthdaysByGuild(guildId, limit = 5) {
   }
 }
 
-async function findByUserAndGuild(userId, guildId) {
+export async function findByUserAndGuild(userId: string, guildId: string): Promise<Birthday | null> {
   try {
     return await Birthday.findOne({
       where: {
@@ -73,7 +72,7 @@ async function findByUserAndGuild(userId, guildId) {
   }
 }
 
-async function updateAgeById(birthdayId, byAge) {
+export async function updateAgeById(birthdayId: string, byAge: number): Promise<unknown> {
   try {
     return await Birthday.increment(
       { age: byAge },
@@ -86,7 +85,11 @@ async function updateAgeById(birthdayId, byAge) {
   }
 }
 
-async function updateByUserAndGuild(userId, guildId, birthdayData) {
+export async function updateByUserAndGuild(
+  userId: string,
+  guildId: string,
+  birthdayData: Partial<BirthdayData>,
+): Promise<[affectedCount: number]> {
   try {
     return await Birthday.update(
       birthdayData,
@@ -99,7 +102,7 @@ async function updateByUserAndGuild(userId, guildId, birthdayData) {
   }
 }
 
-async function deleteByUserAndGuild(userId, guildId) {
+export async function deleteByUserAndGuild(userId: string, guildId: string): Promise<number> {
   try {
     return await Birthday.destroy({
       where: {
@@ -113,14 +116,3 @@ async function deleteByUserAndGuild(userId, guildId) {
     throw new Error('Failed to delete birthday by user and guild');
   }
 }
-
-
-module.exports = {
-  createBirthday,
-  findAllTodayBirthDays,
-  findByUserAndGuild,
-  findNextBirthdaysByGuild,
-  updateAgeById,
-  deleteByUserAndGuild,
-  updateByUserAndGuild,
-};
