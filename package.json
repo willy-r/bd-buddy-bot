@@ -8,7 +8,8 @@
     "lint": "eslint .",
     "commands:deploy": "node ./src/deploy-commands.js",
     "commands:delete": "node ./src/delete-commands.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -22,7 +23,8 @@
   },
   "devDependencies": {
     "dotenv": "^16.4.5",
-    "eslint": "^8.57.0"
+    "eslint": "^8.57.0",
+    "vitest": "^4.1.7"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
