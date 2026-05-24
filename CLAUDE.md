@@ -11,15 +11,16 @@ export PATH="$HOME/.nvm/versions/node/v22.15.0/bin:$PATH"
 ```
 
 ```bash
-pnpm start                # Run the bot
+pnpm start                # Run the bot (via tsx)
+pnpm typecheck            # TypeScript type check (tsc --noEmit)
 pnpm lint                 # ESLint check
+pnpm test                 # Run all tests once
+pnpm test:watch           # Run tests in watch mode
 pnpm run commands:deploy  # Register/update slash commands with Discord API
 pnpm run commands:delete  # Remove all slash commands from Discord API
 ```
 
 `commands:deploy` must be run whenever a command's `data` definition changes (name, description, options). It is a no-op for logic-only changes. With `DISCORD_GUILD_ID` set, deploys to that guild only (instant); without it, deploys globally (up to 1 hour to propagate).
-
-No test suite exists — `pnpm test` exits 1.
 
 ## Environment Variables
 
@@ -39,21 +40,25 @@ Copy `.env.example` to `.env`. Key variables:
 
 ## Architecture
 
-The bot uses **Discord.js v14** with a file-system-driven loader pattern. `bot.js` auto-discovers commands and events at startup — no central registry to update when adding files.
+The bot is written in **TypeScript** and uses **Discord.js v14** with a file-system-driven loader pattern. `bot.ts` auto-discovers commands and events at startup — no central registry to update when adding files. The runtime is `tsx` (no build step needed).
 
 ### Request flow
 
-1. Discord sends an interaction → `events/interactionCreate.js` routes it to the matching command in `client.commands` (a `Collection` keyed by command name).
+1. Discord sends an interaction → `events/interactionCreate.ts` routes it to the matching command in `client.commands` (a `Collection` keyed by command name).
 2. Each command in `src/commands/birthday/` validates input via **Zod** (`src/validators/`), then calls the repository layer.
-3. The repository (`src/repositories/birthdayRepository.js`) is the only layer that touches Sequelize/SQLite. Raw SQL is used only for `findNextBirthdaysByGuild` (SQLite `STRFTIME` ordering).
+3. The repository (`src/repositories/birthdayRepository.ts`) is the only layer that touches Sequelize/SQLite. Raw SQL is used only for `findNextBirthdaysByGuild` (SQLite `STRFTIME` ordering).
 
 ### Background job
 
-`events/ready.js` starts a `CronJob` on login. `src/jobs/birthdayReminderJob.js` queries for today's birthdays, sends an embed to the matching guild channel (resolved from `BIRTHDAY_GUILDS_CHANNELS`), and increments the stored `age` field by 1.
+`events/ready.ts` starts a `CronJob` on login. `src/jobs/birthdayReminderJob.ts` queries for today's birthdays, sends an embed to the matching guild channel (resolved from `BIRTHDAY_GUILDS_CHANNELS`), and increments the stored `age` field by 1.
+
+### Shared types
+
+`src/types.ts` contains the `Command`, `DiscordEvent`, and `BirthdayData` interfaces, plus the Discord.js `Client` module augmentation for `client.commands`.
 
 ### Adding a new command
 
-1. Create `src/commands/<folder>/<name>.js` exporting `{ data: SlashCommandBuilder, execute(interaction) }`.
+1. Create `src/commands/<folder>/<name>.ts` exporting a default object satisfying `{ data: SharedSlashCommand, execute(interaction: ChatInputCommandInteraction) }`.
 2. Run `pnpm run commands:deploy` — the loader picks it up automatically.
 
 ### Deployment

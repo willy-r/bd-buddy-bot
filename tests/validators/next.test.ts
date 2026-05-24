@@ -1,17 +1,17 @@
 import { describe, it, expect } from 'vitest';
-const { getNextBirthdaysSchema, DEFAULT_LIMIT, MAX_LIMIT, MIN_LIMIT } = require('../../src/validators/next');
+import { getNextBirthdaysSchema, DEFAULT_LIMIT, MAX_LIMIT, MIN_LIMIT } from '../../src/validators/next';
 
 describe('getNextBirthdaysSchema', () => {
   it('accepts a quantity within bounds', () => {
     const result = getNextBirthdaysSchema.safeParse({ quantity: 10 });
     expect(result.success).toBe(true);
-    expect(result.data.quantity).toBe(10);
+    if (result.success) expect(result.data.quantity).toBe(10);
   });
 
   it('uses DEFAULT_LIMIT when quantity is omitted', () => {
     const result = getNextBirthdaysSchema.safeParse({});
     expect(result.success).toBe(true);
-    expect(result.data.quantity).toBe(DEFAULT_LIMIT);
+    if (result.success) expect(result.data.quantity).toBe(DEFAULT_LIMIT);
   });
 
   it('rejects quantity below MIN_LIMIT', () => {

@@ -1,25 +1,23 @@
-const { z } = require('zod');
+import { z } from 'zod';
 
 const CURRENT_YEAR = new Date().getFullYear();
 const MIN_YEAR = 1900;
 
-function createDateWithGuessedYear(day, month, year) {
+function createDateWithGuessedYear(day: number, month: number, year?: number): Date {
   if (year) {
     return new Date(year, month - 1, day);
   }
   return new Date(CURRENT_YEAR - 1, month - 1, day);
 }
 
-function isValidDate(date) {
+function isValidDate(date: Date): boolean {
   const now = new Date();
   return date.getFullYear() >= MIN_YEAR && date <= now;
 }
 
-const birthdaySchema = z.string().transform((val, ctx) => {
+export const birthdaySchema = z.string().transform((val, ctx) => {
   const fullDateMatch = val.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
   const shortDateMatch = val.match(/^(\d{2})\/(\d{2})$/);
-
-  let data;
 
   if (fullDateMatch) {
     const [, day, month, year] = fullDateMatch;
@@ -36,29 +34,25 @@ const birthdaySchema = z.string().transform((val, ctx) => {
       return z.NEVER;
     }
 
-    data = {
+    return {
       parsedDate: createDateWithGuessedYear(dayNum, monthNum, yearNum),
       isFullDate: true,
     };
   }
-  else if (shortDateMatch) {
+
+  if (shortDateMatch) {
     const [, day, month] = shortDateMatch;
-    data = {
+    return {
       parsedDate: createDateWithGuessedYear(parseInt(day, 10), parseInt(month, 10)),
       isFullDate: false,
     };
   }
-  else {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'A data deve estar no formato "DD/MM" ou "DD/MM/AAAA"',
-    });
-    return z.NEVER;
-  }
 
-  return data;
+  ctx.addIssue({
+    code: z.ZodIssueCode.custom,
+    message: 'A data deve estar no formato "DD/MM" ou "DD/MM/AAAA"',
+  });
+  return z.NEVER;
 });
 
-module.exports = {
-  birthdaySchema,
-};
+export type BirthdayParsed = z.infer<typeof birthdaySchema>;

@@ -1,9 +1,11 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { findNextBirthdaysByGuild } = require('../../repositories/birthdayRepository');
-const { formatBirthdayLine } = require('../../utils/date');
-const { DEFAULT_LIMIT, MIN_LIMIT, MAX_LIMIT, getNextBirthdaysSchema } = require('../../validators/next');
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
+import type { Command } from '../../types';
 
-module.exports = {
+import { findNextBirthdaysByGuild } from '../../repositories/birthdayRepository';
+import { formatBirthdayLine } from '../../utils/date';
+import { DEFAULT_LIMIT, MIN_LIMIT, MAX_LIMIT, getNextBirthdaysSchema } from '../../validators/next';
+
+const command: Command = {
   data: new SlashCommandBuilder()
     .setName('next')
     .setDescription('Mostra os próximos aniversários cadastrados no servidor')
@@ -15,16 +17,19 @@ module.exports = {
         .setMaxValue(MAX_LIMIT),
     ),
 
-  async execute(interaction) {
-    const hasBirthdayRole = interaction.member.roles.cache.some((role) =>
-      process.env.BIRTHDAY_GUILDS_ROLES.split(',').includes(role.id),
-    );
+  async execute(interaction: ChatInputCommandInteraction) {
+    const hasBirthdayRole = interaction.member?.roles && 'cache' in interaction.member.roles
+      ? interaction.member.roles.cache.some((role) =>
+        (process.env.BIRTHDAY_GUILDS_ROLES ?? '').split(',').includes(role.id),
+      )
+      : false;
+
     if (!hasBirthdayRole) {
       await interaction.reply('Desculpe, você não tem permissão para usar esse comando 😿');
       return;
     }
 
-    const { id: guildId } = interaction.guild;
+    const { id: guildId } = interaction.guild!;
     const quantityInput = interaction.options.getInteger('quantity') ?? DEFAULT_LIMIT;
 
     const parseResult = getNextBirthdaysSchema.safeParse({ quantity: quantityInput });
@@ -52,8 +57,10 @@ module.exports = {
 
       await interaction.reply({ embeds: [embed] });
     }
-    catch (err) {
+    catch (_err) {
       await interaction.reply('Erro ao buscar os próximos aniversários 😿');
     }
   },
 };
+
+export default command;
