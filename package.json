@@ -26,6 +26,7 @@
     "eslint": "^8.57.0",
     "vitest": "^4.1.7"
   },
+  "packageManager": "pnpm@10.26.0",
   "pnpm": {
     "onlyBuiltDependencies": [
       "sqlite3"
