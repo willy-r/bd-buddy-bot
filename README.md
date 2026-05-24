@@ -63,6 +63,15 @@ $ npm run start
 
 Now, **Birthday Buddy Bot** should be up and running in your Discord server!
 
+## Running Tests
+
+The test suite uses [Vitest](https://vitest.dev/). No environment variables are needed — the test config provides them automatically.
+
+```bash
+$ pnpm test         # run all tests once
+$ pnpm test:watch   # watch mode
+```
+
 ## How to Contribute
 
 Contributions to **Birthday Buddy Bot** are welcomed and appreciated. Here's how you can contribute:
