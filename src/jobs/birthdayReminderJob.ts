@@ -3,18 +3,6 @@ import { REST, Routes } from 'discord.js';
 import { findAllTodayBirthDays, updateAgeById } from '../repositories/birthdayRepository';
 import { getRandomBirthdayMessage, getRandomBirthdayGif } from '../utils/birthdayMessages';
 
-function getChannelForGuild(guildId: string): string | undefined {
-  const raw = process.env.BIRTHDAY_GUILD_CHANNELS_MAP ?? '{}';
-  try {
-    const map = JSON.parse(raw) as Record<string, string>;
-    return map[guildId];
-  }
-  catch {
-    console.error('Invalid BIRTHDAY_GUILD_CHANNELS_MAP — expected JSON object');
-    return undefined;
-  }
-}
-
 export default async function birthdayReminderJob(): Promise<void> {
   const today = new Date();
   const todayStr = today.toLocaleDateString('pt-BR');
@@ -22,6 +10,15 @@ export default async function birthdayReminderJob(): Promise<void> {
   console.log(`Checking for users birthday today: ${todayStr}`);
 
   const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN!);
+
+  let channelMap: Record<string, string>;
+  try {
+    channelMap = JSON.parse(process.env.BIRTHDAY_GUILD_CHANNELS_MAP ?? '{}') as Record<string, string>;
+  }
+  catch {
+    console.error('Invalid BIRTHDAY_GUILD_CHANNELS_MAP — expected JSON object');
+    channelMap = {};
+  }
 
   try {
     const [day, month] = todayStr.split('/').slice(0, 2);
@@ -33,7 +30,7 @@ export default async function birthdayReminderJob(): Promise<void> {
     }
 
     for (const userBirthday of usersBirthdays) {
-      const channelId = getChannelForGuild(userBirthday.guild_id);
+      const channelId = channelMap[userBirthday.guild_id];
       if (!channelId) {
         console.log(`Channel not found for guild ${userBirthday.guild_id}, skipping user ${userBirthday.user_id}`);
         continue;

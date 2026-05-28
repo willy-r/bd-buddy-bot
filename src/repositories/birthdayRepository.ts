@@ -19,8 +19,9 @@ export async function findAllTodayBirthDays(day: string, month: string): Promise
   try {
     return await Birthday.findAll({
       where: Sequelize.where(
-        Sequelize.cast(Sequelize.col('birthdate'), 'text'),
-        { [Op.like]: `%-${month}-${day}%` },
+        Sequelize.fn('strftime', '%m-%d', Sequelize.col('birthdate')),
+        Op.eq,
+        `${month}-${day}`,
       ),
     });
   }

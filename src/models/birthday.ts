@@ -62,11 +62,15 @@ Birthday.init({
   sequelize: db,
   createdAt: 'created_at',
   updatedAt: 'updated_at',
-  indexes: [{ unique: true, fields: ['user_id', 'guild_id'] }],
+  indexes: [
+    { unique: true, fields: ['user_id', 'guild_id'] },
+    { fields: ['guild_id'] },
+  ],
   hooks: {
     beforeCreate: (birthday) => {
       if (!birthday.show_age) {
         birthday.age = null;
+        return;
       }
 
       const today = new Date();
