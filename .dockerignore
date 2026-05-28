@@ -3,3 +3,4 @@ npm-debug.log
 assets/
 .env
 *.sqlite3
+dist

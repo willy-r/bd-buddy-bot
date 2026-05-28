@@ -1,10 +1,19 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { SlashCommandBuilder, REST, Routes } from 'discord.js';
 import type { DiscordInteractionBody, DiscordInteractionResponse } from '../../types';
 import { InteractionResponseType } from '../../types';
 import { findNextBirthdaysByGuild } from '../../repositories/birthdayRepository';
 import { formatBirthdayLine } from '../../utils/date';
 import { DEFAULT_LIMIT, MIN_LIMIT, MAX_LIMIT, getNextBirthdaysSchema } from '../../validators/next';
 import { hasRequiredRole, getIntegerOption, textResponse } from './helpers';
+
+async function isUserInGuild(rest: REST, guildId: string, userId: string): Promise<boolean> {
+  try {
+    await rest.get(Routes.guildMember(guildId, userId));
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export const data = new SlashCommandBuilder()
   .setName('next')
@@ -45,7 +54,18 @@ export async function handleNext(body: DiscordInteractionBody): Promise<DiscordI
       );
     }
 
-    const lines = birthdays.map(formatBirthdayLine).join('\n');
+    const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN!);
+    const inGuild = await Promise.all(birthdays.map((b) => isUserInGuild(rest, guildId, b.user_id)));
+    const activeBirthdays = birthdays.filter((_, i) => inGuild[i]);
+
+    if (!activeBirthdays.length) {
+      return textResponse(
+        InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        'Ainda não há aniversários cadastrados neste servidor 😿',
+      );
+    }
+
+    const lines = activeBirthdays.map(formatBirthdayLine).join('\n');
     return {
       type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
       data: {
@@ -53,7 +73,7 @@ export async function handleNext(body: DiscordInteractionBody): Promise<DiscordI
           title: '🎈 Próximos aniversariantes',
           description: lines,
           color: 0xFF69B4,
-          footer: { text: `Exibindo os próximos ${quantity} aniversários` },
+          footer: { text: `Exibindo os próximos ${activeBirthdays.length} aniversários` },
         }],
       },
     };

@@ -11,7 +11,8 @@ export PATH="$HOME/.nvm/versions/node/v22.15.0/bin:$PATH"
 ```
 
 ```bash
-pnpm start                # Run the HTTP server (via tsx)
+pnpm start                # Run the HTTP server locally (via tsx, no build needed)
+pnpm build                # Compile TypeScript for production (outputs to dist/)
 pnpm typecheck            # TypeScript type check (tsc --noEmit)
 pnpm lint                 # ESLint check
 pnpm test                 # Run all tests once

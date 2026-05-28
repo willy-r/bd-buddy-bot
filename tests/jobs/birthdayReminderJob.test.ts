@@ -6,6 +6,7 @@ import birthdayReminderJob from '../../src/jobs/birthdayReminderJob';
 // Today is pinned to June 15 2024 so query date is deterministic.
 
 const postMock = vi.fn().mockResolvedValue(undefined);
+const getMock = vi.fn().mockResolvedValue({});
 
 vi.mock('discord.js', async (importOriginal) => {
   const actual = await importOriginal<typeof import('discord.js')>();
@@ -16,6 +17,7 @@ vi.mock('discord.js', async (importOriginal) => {
       return {
         setToken: vi.fn().mockReturnThis(),
         post: postMock,
+        get: getMock,
       };
     }),
   };
@@ -37,6 +39,7 @@ beforeEach(async () => {
   await Birthday.sync({ force: true });
   vi.useFakeTimers();
   vi.setSystemTime(new Date(2024, 5, 15)); // June 15 2024
+  getMock.mockResolvedValue({});
   process.env.DISCORD_TOKEN = 'test-token';
   process.env.BIRTHDAY_GUILD_CHANNELS_MAP = '{"g1":"channel-1"}';
 });
@@ -55,6 +58,15 @@ describe('birthdayReminderJob', () => {
   it('skips when guild has no channel mapping', async () => {
     await createBirthdayToday({ guild_id: 'unmapped-guild' });
     await birthdayReminderJob();
+    expect(postMock).not.toHaveBeenCalled();
+  });
+
+  it('skips when user is no longer in the guild', async () => {
+    await createBirthdayToday({ show_age: false });
+    getMock.mockRejectedValue(new Error('Unknown Member'));
+
+    await birthdayReminderJob();
+
     expect(postMock).not.toHaveBeenCalled();
   });
 

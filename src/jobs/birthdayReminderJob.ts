@@ -39,6 +39,14 @@ export default async function birthdayReminderJob(): Promise<void> {
         continue;
       }
 
+      try {
+        await rest.get(Routes.guildMember(userBirthday.guild_id, userBirthday.user_id));
+      }
+      catch {
+        console.log(`User ${userBirthday.user_id} is no longer in guild ${userBirthday.guild_id}, skipping`);
+        continue;
+      }
+
       console.log(`Sending reminder for user ${userBirthday.user_id} in channel ${channelId}`);
 
       await updateAgeById(userBirthday.id, 1);

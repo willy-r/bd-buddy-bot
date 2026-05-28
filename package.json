@@ -4,6 +4,7 @@
   "description": "",
   "scripts": {
     "start": "tsx src/server.ts",
+    "build": "tsc --project tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "commands:deploy": "tsx src/deploy-commands.ts",
