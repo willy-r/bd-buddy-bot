@@ -2,20 +2,24 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import Birthday from '../../src/models/birthday';
 import birthdayReminderJob from '../../src/jobs/birthdayReminderJob';
 
-// Integration tests: real in-memory SQLite DB, mocked Discord client only.
+// Integration tests: real in-memory SQLite DB, mocked discord.js REST only.
 // Today is pinned to June 15 2024 so query date is deterministic.
 
-function makeClient({ guildExists = true, channelExists = true } = {}) {
-  const sendMock = vi.fn().mockResolvedValue(undefined);
-  const channel = channelExists ? { id: '333', send: sendMock } : undefined;
-  const guildMock = guildExists
-    ? { channels: { cache: { find: vi.fn().mockReturnValue(channel) } } }
-    : undefined;
+const postMock = vi.fn().mockResolvedValue(undefined);
+
+vi.mock('discord.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('discord.js')>();
   return {
-    guilds: { cache: { get: vi.fn().mockReturnValue(guildMock) } },
-    _sendMock: sendMock,
+    ...actual,
+    /* eslint-disable-next-line no-empty-function */
+    REST: vi.fn().mockImplementation(function () {
+      return {
+        setToken: vi.fn().mockReturnThis(),
+        post: postMock,
+      };
+    }),
   };
-}
+});
 
 async function createBirthdayToday(overrides: Record<string, unknown> = {}) {
   return Birthday.create({
@@ -33,6 +37,8 @@ beforeEach(async () => {
   await Birthday.sync({ force: true });
   vi.useFakeTimers();
   vi.setSystemTime(new Date(2024, 5, 15)); // June 15 2024
+  process.env.DISCORD_TOKEN = 'test-token';
+  process.env.BIRTHDAY_GUILD_CHANNELS_MAP = '{"g1":"channel-1"}';
 });
 
 afterEach(() => {
@@ -42,36 +48,25 @@ afterEach(() => {
 
 describe('birthdayReminderJob', () => {
   it('does nothing when there are no birthdays today', async () => {
-    const client = makeClient();
-    await birthdayReminderJob(client as never);
-    expect(client._sendMock).not.toHaveBeenCalled();
+    await birthdayReminderJob();
+    expect(postMock).not.toHaveBeenCalled();
   });
 
-  it('skips when guild is not found in cache', async () => {
-    await createBirthdayToday();
-    const client = makeClient({ guildExists: false });
-    await birthdayReminderJob(client as never);
-    expect(client._sendMock).not.toHaveBeenCalled();
-  });
-
-  it('skips when channel is not found in cache', async () => {
-    await createBirthdayToday();
-    const client = makeClient({ guildExists: true, channelExists: false });
-    await birthdayReminderJob(client as never);
-    expect(client._sendMock).not.toHaveBeenCalled();
+  it('skips when guild has no channel mapping', async () => {
+    await createBirthdayToday({ guild_id: 'unmapped-guild' });
+    await birthdayReminderJob();
+    expect(postMock).not.toHaveBeenCalled();
   });
 
   it('sends an embed and increments age on happy path', async () => {
     const record = await createBirthdayToday({ show_age: true });
     const ageBefore = record.age;
-    const client = makeClient();
 
-    await birthdayReminderJob(client as never);
+    await birthdayReminderJob();
 
-    expect(client._sendMock).toHaveBeenCalledOnce();
-    const [payload] = client._sendMock.mock.calls[0] as [{ embeds: unknown[] }][];
-    expect(payload).toHaveProperty('embeds');
-    expect((payload as unknown as { embeds: unknown[] }).embeds.length).toBe(1);
+    expect(postMock).toHaveBeenCalledOnce();
+    const [_route, options] = postMock.mock.calls[0] as [string, { body: { embeds: unknown[] } }];
+    expect(options.body.embeds).toHaveLength(1);
 
     const updated = await Birthday.findByPk(record.id);
     expect(updated!.age).toBe((ageBefore ?? 0) + 1);
@@ -80,10 +75,9 @@ describe('birthdayReminderJob', () => {
   it('processes multiple birthday records independently', async () => {
     await createBirthdayToday({ user_id: 'u1' });
     await createBirthdayToday({ user_id: 'u2' });
-    const client = makeClient();
 
-    await birthdayReminderJob(client as never);
+    await birthdayReminderJob();
 
-    expect(client._sendMock).toHaveBeenCalledTimes(2);
+    expect(postMock).toHaveBeenCalledTimes(2);
   });
 });

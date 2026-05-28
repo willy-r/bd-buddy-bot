@@ -2,31 +2,23 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import 'dotenv/config';
-import { REST, Routes } from 'discord.js';
+import { REST, Routes, type SharedSlashCommand } from 'discord.js';
 
-import type { Command } from './types';
+const commands: ReturnType<SharedSlashCommand['toJSON']>[] = [];
 
-const commands: ReturnType<Command['data']['toJSON']>[] = [];
+const commandsPath = path.join(__dirname, 'handlers', 'commands');
+const commandFiles = fs.readdirSync(commandsPath)
+  .filter((file) => file.endsWith('.ts') && file !== 'helpers.ts');
 
-const foldersPath = path.join(__dirname, 'commands');
-const commandFolders = fs.readdirSync(foldersPath);
-
-for (const folder of commandFolders) {
-  const commandsPath = path.join(foldersPath, folder);
-  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.ts'));
-
-  for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require(filePath);
-    const command: Partial<Command> = mod.default ?? mod;
-
-    if (command.data && command.execute) {
-      commands.push(command.data.toJSON());
-    }
-    else {
-      console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
-    }
+for (const file of commandFiles) {
+  const filePath = path.join(commandsPath, file);
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const mod = require(filePath);
+  if (mod.data) {
+    commands.push((mod.data as SharedSlashCommand).toJSON());
+  }
+  else {
+    console.log(`[WARNING] ${filePath} is missing a "data" export.`);
   }
 }
 

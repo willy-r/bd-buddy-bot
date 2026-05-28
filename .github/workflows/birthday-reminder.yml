@@ -1,0 +1,18 @@
+name: Birthday Reminder
+
+on:
+  schedule:
+    # Valor espelhado na repository variable BIRTHDAY_REMINDER_CRON_UTC
+    # Para mudar horário: atualizar aqui E a variable em Settings > Variables > Actions
+    - cron: '0 11 * * *' # 11h UTC = 8h Brasília (UTC-3)
+  workflow_dispatch: # permite disparo manual para testes
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger birthday reminder
+        run: |
+          curl -s -f -X POST \
+            -H "X-Internal-Token: ${{ secrets.INTERNAL_JOB_TOKEN }}" \
+            https://bd-buddy-bot.fly.dev/jobs/birthday-reminder

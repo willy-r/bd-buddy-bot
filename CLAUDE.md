@@ -11,7 +11,7 @@ export PATH="$HOME/.nvm/versions/node/v22.15.0/bin:$PATH"
 ```
 
 ```bash
-pnpm start                # Run the bot (via tsx)
+pnpm start                # Run the HTTP server (via tsx)
 pnpm typecheck            # TypeScript type check (tsc --noEmit)
 pnpm lint                 # ESLint check
 pnpm test                 # Run all tests once
@@ -26,44 +26,56 @@ pnpm run commands:delete  # Remove all slash commands from Discord API
 
 Copy `.env.example` to `.env`. Key variables:
 
-| Variable                                    | Purpose                                                              |
-| ------------------------------------------- | -------------------------------------------------------------------- |
-| `BOT_ENV`                                   | `dev` enables Sequelize SQL logging                                  |
-| `DATABASE_PATH`                             | SQLite file path (e.g. `db.dev.sqlite3`)                             |
-| `DISCORD_TOKEN`                             | Bot token from Discord Developer Portal                              |
-| `DISCORD_CLIENT_ID`                         | Application ID                                                       |
-| `DISCORD_GUILD_ID`                          | Server ID — scopes command deployment to one guild; omit for global  |
-| `BIRTHDAY_GUILDS_ROLES`                     | Comma-separated role IDs; users need one to run `/add`               |
-| `BIRTHDAY_GUILDS_CHANNELS`                  | Comma-separated channel IDs where birthday messages are sent         |
-| `BIRTHDAY_REMINDER_CRON`                    | Cron expression for the reminder job (timezone: `America/Sao_Paulo`) |
-| `DEFAULT_LIMIT` / `MAX_LIMIT` / `MIN_LIMIT` | Pagination bounds for `/next`                                        |
+| Variable                                    | Purpose                                                                    |
+| ------------------------------------------- | -------------------------------------------------------------------------- |
+| `BOT_ENV`                                   | `dev` enables Sequelize SQL logging                                        |
+| `DATABASE_PATH`                             | SQLite file path (e.g. `db.dev.sqlite3`)                                   |
+| `DISCORD_TOKEN`                             | Bot token from Discord Developer Portal                                    |
+| `DISCORD_CLIENT_ID`                         | Application ID (only needed for `commands:deploy`)                         |
+| `DISCORD_PUBLIC_KEY`                        | Ed25519 public key — used to verify every incoming interaction request     |
+| `DISCORD_GUILD_ID`                          | Server ID — scopes command deployment to one guild; omit for global        |
+| `BIRTHDAY_GUILDS_ROLES`                     | Comma-separated role IDs; users need one to run any birthday command       |
+| `BIRTHDAY_GUILD_CHANNELS_MAP`               | JSON map `{"guild_id":"channel_id"}` for birthday announcement channels    |
+| `INTERNAL_JOB_TOKEN`                        | Secret token that authenticates the `/jobs/birthday-reminder` HTTP route   |
+| `DEFAULT_LIMIT` / `MAX_LIMIT` / `MIN_LIMIT` | Pagination bounds for `/next` (defaults: 5 / 25 / 1)                      |
 
 ## Architecture
 
-The bot is written in **TypeScript** and uses **Discord.js v14** with a file-system-driven loader pattern. `bot.ts` auto-discovers commands and events at startup — no central registry to update when adding files. The runtime is `tsx` (no build step needed).
+The bot is written in **TypeScript** and runs as an **HTTP server** (Fastify) on port 3000. It uses Discord's HTTP Interactions endpoint instead of a persistent WebSocket gateway — the machine can sleep when idle (Fly.io `auto_stop_machines`).
 
 ### Request flow
 
-1. Discord sends an interaction → `events/interactionCreate.ts` routes it to the matching command in `client.commands` (a `Collection` keyed by command name).
-2. Each command in `src/commands/birthday/` validates input via **Zod** (`src/validators/`), then calls the repository layer.
-3. The repository (`src/repositories/birthdayRepository.ts`) is the only layer that touches Sequelize/SQLite. Raw SQL is used only for `findNextBirthdaysByGuild` (SQLite `STRFTIME` ordering).
+1. Discord sends a POST to `/interactions` → `src/server.ts` validates the Ed25519 signature via `src/middleware/verifySignature.ts`.
+2. `src/handlers/interactions.ts` routes the interaction to the matching handler in `src/handlers/commands/`.
+3. Each handler validates input via **Zod** (`src/validators/`), calls the repository layer, and returns a `DiscordInteractionResponse` object.
+4. The repository (`src/repositories/birthdayRepository.ts`) is the only layer that touches Sequelize/SQLite.
 
 ### Background job
 
-`events/ready.ts` starts a `CronJob` on login. `src/jobs/birthdayReminderJob.ts` queries for today's birthdays, sends an embed to the matching guild channel (resolved from `BIRTHDAY_GUILDS_CHANNELS`), and increments the stored `age` field by 1.
+`src/jobs/birthdayReminderJob.ts` runs when GitHub Actions calls `POST /jobs/birthday-reminder` (authenticated via `INTERNAL_JOB_TOKEN`). It queries for today's birthdays, sends an embed to the matching guild channel via **discord.js REST** (no gateway), and increments the stored `age` field by 1.
+
+The cron schedule is defined in `.github/workflows/birthday-reminder.yml` (`0 11 * * *` UTC = 8h Brasília).
+
+### Local development with tunnel
+
+Discord requires a public HTTPS URL to deliver interactions. For local dev:
+
+```bash
+ngrok http 3000
+# Then set Interactions Endpoint URL in the Developer Portal to https://<ngrok-url>/interactions
+```
 
 ### Shared types
 
-`src/types.ts` contains the `Command`, `DiscordEvent`, and `BirthdayData` interfaces, plus the Discord.js `Client` module augmentation for `client.commands`.
+`src/types.ts` contains `BirthdayData`, the Discord HTTP interaction types (`DiscordInteractionBody`, `DiscordInteractionResponse`, etc.), and the `InteractionType` / `InteractionResponseType` enums.
 
 ### Adding a new command
 
-1. Create `src/commands/<folder>/<name>.ts` exporting a default object satisfying `{ data: SharedSlashCommand, execute(interaction: ChatInputCommandInteraction) }`.
-2. Run `pnpm run commands:deploy` — the loader picks it up automatically.
-
-### Deployment
-
-Deployed to **Fly.io** (`fly.toml`, region `gru`). The SQLite database is persisted on a mounted volume at `/usr/data`. `DATABASE_PATH` in production should point inside that mount. CI/CD is defined in `.github/workflows/fly.yml`.
+1. Create `src/handlers/commands/<name>.ts` exporting:
+   - `export const data` — a `SlashCommandBuilder` instance (used by `commands:deploy`)
+   - `export async function handle<Name>(body: DiscordInteractionBody): Promise<DiscordInteractionResponse>`
+2. Register the handler in `src/handlers/interactions.ts` (add a `case` to the switch).
+3. Run `pnpm run commands:deploy` to register the new command with Discord.
 
 ## Code Conventions
 
@@ -71,3 +83,9 @@ Deployed to **Fly.io** (`fly.toml`, region `gru`). The SQLite database is persis
 - No inline comments (`no-inline-comments` rule is on) — use block comments when needed.
 - User-facing strings are in **Brazilian Portuguese**; internal logs are in English.
 - The unique constraint on `(user_id, guild_id)` is the guard against duplicate birthday registrations — do not add application-level duplication checks.
+
+## Deployment
+
+Deployed to **Fly.io** (`fly.toml`, region `gru`). The SQLite database is persisted on a mounted volume at `/usr/data`. `DATABASE_PATH` in production should point inside that mount. The machine uses `auto_stop_machines = "stop"` — it sleeps when idle and wakes on incoming requests.
+
+CI/CD is defined in `.github/workflows/fly.yml` (deploy on push to main) and `.github/workflows/birthday-reminder.yml` (daily cron).
