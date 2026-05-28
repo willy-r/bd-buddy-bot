@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "tsx src/bot.ts",
+    "start": "tsx src/server.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "commands:deploy": "tsx src/deploy-commands.ts",
@@ -15,8 +15,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "cron": "^3.1.6",
     "discord.js": "^14.14.1",
+    "fastify": "^5.8.5",
     "sequelize": "^6.37.2",
     "sqlite3": "^5.1.7",
     "tsx": "^4.22.3",

@@ -1,14 +1,27 @@
-import { EmbedBuilder } from 'discord.js';
-import type { Client } from '../types';
+import { REST, Routes } from 'discord.js';
 
 import { findAllTodayBirthDays, updateAgeById } from '../repositories/birthdayRepository';
 import { getRandomBirthdayMessage, getRandomBirthdayGif } from '../utils/birthdayMessages';
 
-export default async function birthdayReminderJob(client: Client): Promise<void> {
+function getChannelForGuild(guildId: string): string | undefined {
+  const raw = process.env.BIRTHDAY_GUILD_CHANNELS_MAP ?? '{}';
+  try {
+    const map = JSON.parse(raw) as Record<string, string>;
+    return map[guildId];
+  }
+  catch {
+    console.error('Invalid BIRTHDAY_GUILD_CHANNELS_MAP — expected JSON object');
+    return undefined;
+  }
+}
+
+export default async function birthdayReminderJob(): Promise<void> {
   const today = new Date();
   const todayStr = today.toLocaleDateString('pt-BR');
 
   console.log(`Checking for users birthday today: ${todayStr}`);
+
+  const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN!);
 
   try {
     const [day, month] = todayStr.split('/').slice(0, 2);
@@ -20,34 +33,29 @@ export default async function birthdayReminderJob(client: Client): Promise<void>
     }
 
     for (const userBirthday of usersBirthdays) {
-      const guild = client.guilds.cache.get(userBirthday.guild_id);
-      if (!guild) {
-        console.log(`Guild ${userBirthday.guild_id} not found for user ${userBirthday.user_id}, skipping...`);
+      const channelId = getChannelForGuild(userBirthday.guild_id);
+      if (!channelId) {
+        console.log(`Channel not found for guild ${userBirthday.guild_id}, skipping user ${userBirthday.user_id}`);
         continue;
       }
 
-      const channel = guild.channels.cache.find((chann) => {
-        return (process.env.BIRTHDAY_GUILDS_CHANNELS ?? '').split(',').includes(chann.id);
-      });
-      if (!channel) {
-        console.log(`Channel not found for user ${userBirthday.user_id} from guild ${userBirthday.guild_id}, skipping...`);
-        continue;
-      }
-
-      console.log(`Sending reminder for user ${userBirthday.user_id} in channel ${channel.id} from guild ${userBirthday.guild_id}`);
+      console.log(`Sending reminder for user ${userBirthday.user_id} in channel ${channelId}`);
 
       await updateAgeById(userBirthday.id, 1);
 
       const birthdayMessage = getRandomBirthdayMessage(userBirthday);
       const birthdayGif = getRandomBirthdayGif();
 
-      const embed = new EmbedBuilder()
-        .setDescription(birthdayMessage)
-        .setImage(birthdayGif)
-        .setColor('#FFD700')
-        .setFooter({ text: 'Comemore seu dia! 🎈' });
-
-      await (channel as { send: (opts: unknown) => Promise<unknown> }).send({ embeds: [embed] });
+      await rest.post(Routes.channelMessages(channelId), {
+        body: {
+          embeds: [{
+            description: birthdayMessage,
+            image: { url: birthdayGif },
+            color: 0xFFD700,
+            footer: { text: 'Comemore seu dia! 🎈' },
+          }],
+        },
+      });
     }
   }
   catch (err) {
