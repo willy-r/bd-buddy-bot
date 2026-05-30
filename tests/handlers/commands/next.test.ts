@@ -54,7 +54,7 @@ async function createBirthday(userId: string, birthdate: Date) {
 beforeEach(async () => {
   await Birthday.sync({ force: true });
   getMock.mockResolvedValue({});
-  process.env.BIRTHDAY_GUILDS_ROLES = ALLOWED_ROLE;
+  process.env.BIRTHDAY_GUILD_ROLES_MAP = JSON.stringify({ guild1: ALLOWED_ROLE });
   process.env.DISCORD_TOKEN = 'test-token';
   process.env.DEFAULT_LIMIT = '5';
   process.env.MAX_LIMIT = '25';

@@ -77,11 +77,23 @@ describe('birthdayReminderJob', () => {
     await birthdayReminderJob();
 
     expect(postMock).toHaveBeenCalledOnce();
-    const [_route, options] = postMock.mock.calls[0] as [string, { body: { embeds: unknown[] } }];
+    const [_route, options] = postMock.mock.calls[0] as [string, { body: { content?: string; embeds: unknown[] } }];
     expect(options.body.embeds).toHaveLength(1);
+    expect(options.body.content).toBeUndefined();
 
     const updated = await Birthday.findByPk(record.id);
     expect(updated!.age).toBe((ageBefore ?? 0) + 1);
+  });
+
+  it('includes role mention in content when guild has a role mapped', async () => {
+    process.env.BIRTHDAY_GUILD_ROLES_MAP = '{"g1":"role-123"}';
+    await createBirthdayToday({ show_age: false });
+
+    await birthdayReminderJob();
+
+    expect(postMock).toHaveBeenCalledOnce();
+    const [_route, options] = postMock.mock.calls[0] as [string, { body: { content?: string } }];
+    expect(options.body.content).toBe('<@&role-123>');
   });
 
   it('processes multiple birthday records independently', async () => {

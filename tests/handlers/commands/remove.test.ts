@@ -30,7 +30,7 @@ async function createBirthday(userId = 'user1', guildId = 'guild1') {
 
 beforeEach(async () => {
   await Birthday.sync({ force: true });
-  process.env.BIRTHDAY_GUILDS_ROLES = ALLOWED_ROLE;
+  process.env.BIRTHDAY_GUILD_ROLES_MAP = JSON.stringify({ guild1: ALLOWED_ROLE });
 });
 
 describe('handleRemove', () => {

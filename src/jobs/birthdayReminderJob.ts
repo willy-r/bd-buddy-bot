@@ -20,6 +20,15 @@ export default async function birthdayReminderJob(): Promise<void> {
     channelMap = {};
   }
 
+  let rolesMap: Record<string, string>;
+  try {
+    rolesMap = JSON.parse(process.env.BIRTHDAY_GUILD_ROLES_MAP ?? '{}') as Record<string, string>;
+  }
+  catch {
+    console.error('Invalid BIRTHDAY_GUILD_ROLES_MAP — expected JSON object');
+    rolesMap = {};
+  }
+
   try {
     const [day, month] = todayStr.split('/').slice(0, 2);
     const usersBirthdays = await findAllTodayBirthDays(day, month);
@@ -51,8 +60,11 @@ export default async function birthdayReminderJob(): Promise<void> {
       const birthdayMessage = getRandomBirthdayMessage(userBirthday);
       const birthdayGif = getRandomBirthdayGif();
 
+      const roleId = rolesMap[userBirthday.guild_id];
+
       await rest.post(Routes.channelMessages(channelId), {
         body: {
+          content: roleId ? `<@&${roleId}>` : undefined,
           embeds: [{
             description: birthdayMessage,
             image: { url: birthdayGif },

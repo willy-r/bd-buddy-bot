@@ -25,7 +25,7 @@ function makeBody(overrides: Partial<DiscordInteractionBody> = {}): DiscordInter
 
 beforeEach(async () => {
   await Birthday.sync({ force: true });
-  process.env.BIRTHDAY_GUILDS_ROLES = ALLOWED_ROLE;
+  process.env.BIRTHDAY_GUILD_ROLES_MAP = JSON.stringify({ guild1: ALLOWED_ROLE });
 });
 
 describe('handleAdd', () => {
